@@ -102,6 +102,7 @@ CREATE TABLE alerts (
  UNIQUE(rule_id,measurement_id)
 );
 
+
 INSERT INTO metric_definitions(code,category,label,unit,value_kind,min_allowed,max_allowed) VALUES
 ('heart_rate','cardiovascular','Frecuencia cardíaca','bpm','numeric',0,NULL),
 ('blood_pressure','cardiovascular','Presión arterial','mmHg','composite',NULL,NULL),
