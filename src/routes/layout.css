@@ -1,3 +1,37 @@
 @import 'tailwindcss';
 @plugin '@tailwindcss/forms';
 @plugin '@tailwindcss/typography';
+
+/*
+ * Deterministic starfield for the crew portrait plates. Rendered as an overlay
+ * layer so it composes with the per-astronaut gradient instead of replacing it.
+ */
+.star-field {
+	background-image:
+		radial-gradient(circle at 12% 22%, rgb(255 255 255 / 0.6) 0 1px, transparent 1.6px),
+		radial-gradient(circle at 68% 16%, rgb(255 255 255 / 0.45) 0 1px, transparent 1.6px),
+		radial-gradient(circle at 42% 64%, rgb(255 255 255 / 0.35) 0 1px, transparent 1.6px),
+		radial-gradient(circle at 86% 78%, rgb(255 255 255 / 0.5) 0 1px, transparent 1.6px),
+		radial-gradient(circle at 28% 88%, rgb(255 255 255 / 0.3) 0 1px, transparent 1.6px),
+		radial-gradient(circle at 92% 40%, rgb(255 255 255 / 0.3) 0 1px, transparent 1.6px);
+}
+
+/* Deep-space stage behind the crew rail. */
+.crew-backdrop {
+	background:
+		radial-gradient(120% 80% at 50% -10%, rgb(30 41 59 / 0.9), transparent 60%),
+		radial-gradient(60% 50% at 12% 18%, rgb(49 46 129 / 0.35), transparent 70%),
+		radial-gradient(55% 45% at 88% 28%, rgb(8 145 178 / 0.18), transparent 70%), #020617;
+}
+
+/* Native dialogs do not lock the page behind them; kiosks should not scroll. */
+body:has(dialog[open]) {
+	overflow: hidden;
+}
+
+/* Kiosk/touch screens should not flash a grey highlight on every tap. */
+@media (hover: none) {
+	* {
+		-webkit-tap-highlight-color: transparent;
+	}
+}
