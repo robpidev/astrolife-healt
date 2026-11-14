@@ -55,6 +55,7 @@
 				</h2>
 				<p class="mt-1 flex flex-wrap items-center gap-2 text-sm {muted}">
 					<span>{astronaut.role}</span>
+					<span>· {astronaut.nationality ?? "Nacionalidad sin registrar"}</span>
 					<span
 						class="inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-medium ring-1 ring-inset {status.pill}"
 					>

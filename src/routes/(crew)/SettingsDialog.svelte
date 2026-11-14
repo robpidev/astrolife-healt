@@ -92,7 +92,7 @@
 					Centro de control
 				</p>
 				<h2 id="settings-dialog-title" class="mt-1 text-xl font-semibold tracking-tight text-white">
-					Ajustes de la demo
+					Ajustes de la vista
 				</h2>
 			</div>
 			<button
@@ -280,7 +280,7 @@
 				</h3>
 				<div class="mt-2 rounded-2xl border border-white/10 bg-white/5 p-4">
 					<p class="text-sm text-slate-300">
-						La tripulación y las tareas son datos de demostración. Restablecer la demo recupera el
+						Restablecer las preferencias recupera el
 						estado inicial.
 					</p>
 					<button
@@ -288,7 +288,7 @@
 						class="mt-3 inline-flex min-h-11 w-full items-center justify-center rounded-xl border border-white/10 px-4 text-sm font-semibold text-slate-100 transition hover:bg-white/10 focus-visible:ring-2 focus-visible:ring-teal-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950 focus-visible:outline-none sm:w-auto"
 						onclick={onreset}
 					>
-						Restablecer demo
+						Restablecer preferencias
 					</button>
 				</div>
 			</section>

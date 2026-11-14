@@ -1,0 +1,29 @@
+{
+  "tool": "image_gen (built-in)",
+  "portraits": [
+    {
+      "path": "static/images/astronauts/valentina-rios.png",
+      "prompt": "Use case: photorealistic-natural. Asset type: astronaut profile photo for a fictional crew dashboard. Subject: Valentina Ríos, fictional Peruvian female astronaut, 38, medium brown skin, dark hair tied back. One person, chest-up centered frontal studio photographic portrait, friendly confident expression looking at camera, head fully visible with generous margin for circular avatar crop. Wearing realistic plain navy blue astronaut flight suit, no helmet. Dark slate studio background, soft cool cinematic rim lighting, natural skin texture, professional space crew photography. Square image. No text, logos, watermarks, flags, collage or additional people. Not a real public figure."
+    },
+    {
+      "path": "static/images/astronauts/mateo-ferrer.png",
+      "prompt": "Use case: photorealistic-natural. Asset type: astronaut profile photo for a fictional crew dashboard. Subject: Mateo Ferrer, fictional Spanish male astronaut, 35, light olive skin, short brown hair, light stubble. One person, chest-up centered frontal studio photographic portrait, friendly confident expression looking at camera, head fully visible with generous margin for circular avatar crop. Wearing realistic plain navy blue astronaut flight suit, no helmet. Dark slate studio background, soft cool cinematic rim lighting, natural skin texture, professional space crew photography. Square image. No text, logos, watermarks, flags, collage or additional people. Not a real public figure."
+    },
+    {
+      "path": "static/images/astronauts/aiko-tanaka.png",
+      "prompt": "Use case: photorealistic-natural. Asset type: astronaut profile photo for a fictional crew dashboard. Subject: Aiko Tanaka, fictional Japanese female astronaut, 34, straight black bob haircut. One person, chest-up centered frontal studio photographic portrait, friendly confident expression looking at camera, head fully visible with generous margin for circular avatar crop. Wearing realistic plain navy blue astronaut flight suit, no helmet. Dark slate studio background, soft cool cinematic rim lighting, natural skin texture, professional space crew photography. Square image. No text, logos, watermarks, flags, collage or additional people. Not a real public figure."
+    },
+    {
+      "path": "static/images/astronauts/samuel-duarte.png",
+      "prompt": "Use case: photorealistic-natural. Asset type: astronaut profile photo for a fictional crew dashboard. Subject: Samuel Duarte, fictional Brazilian male astronaut, 40, brown skin, short curly black hair. One person, chest-up centered frontal studio photographic portrait, friendly confident expression looking at camera, head fully visible with generous margin for circular avatar crop. Wearing realistic plain navy blue astronaut flight suit, no helmet. Dark slate studio background, soft cool cinematic rim lighting, natural skin texture, professional space crew photography. Square image. No text, logos, watermarks, flags, collage or additional people. Not a real public figure."
+    },
+    {
+      "path": "static/images/astronauts/camila-sosa.png",
+      "prompt": "Use case: photorealistic-natural. Asset type: astronaut profile photo for a fictional crew dashboard. Subject: Camila Sosa, fictional Argentinian female astronaut, 32, olive skin, shoulder length dark brown hair. One person, chest-up centered frontal studio photographic portrait, friendly confident expression looking at camera, head fully visible with generous margin for circular avatar crop. Wearing realistic plain navy blue astronaut flight suit, no helmet. Dark slate studio background, soft cool cinematic rim lighting, natural skin texture, professional space crew photography. Square image. No text, logos, watermarks, flags, collage or additional people. Not a real public figure."
+    },
+    {
+      "path": "static/images/astronauts/amara-okafor.png",
+      "prompt": "Use case: photorealistic-natural. Asset type: astronaut profile photo for a fictional crew dashboard. Subject: Amara Okafor, fictional Nigerian female astronaut, 33, dark skin, neatly tied natural braids. One person, chest-up centered frontal studio photographic portrait, friendly confident expression looking at camera, head fully visible with generous margin for circular avatar crop. Wearing realistic plain navy blue astronaut flight suit, no helmet. Dark slate studio background, soft cool cinematic rim lighting, natural skin texture, professional space crew photography. Square image. No text, logos, watermarks, flags, collage or additional people. Not a real public figure."
+    }
+  ]
+}

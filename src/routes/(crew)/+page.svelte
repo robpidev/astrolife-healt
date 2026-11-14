@@ -1,16 +1,10 @@
 <script lang="ts">
 	import { untrack } from 'svelte';
 	import { browser } from '$app/env';
-	import type { Astronaut, CrewTone } from '#lib/interfaces/astronaut.js';
+	import type { Astronaut } from '#lib/interfaces/astronaut.js';
 	import type { CrewSettings } from '#lib/interfaces/settings.js';
 	import { DEFAULT_CREW_SETTINGS } from '#lib/interfaces/settings.js';
-	import {
-		astronautName,
-		createCrewAstronaut,
-		crewTaskProgress,
-		levelProgress,
-		toggleCrewTask
-	} from '#lib/utils/crew.js';
+	import { astronautName, crewTaskProgress } from '#lib/utils/crew.js';
 	import { crewTones } from '#lib/utils/crew-theme.js';
 	import CrewPoster from './CrewPoster.svelte';
 	import CrewInfo from './CrewInfo.svelte';
@@ -23,28 +17,15 @@
 	type Tier = 'center' | 'near' | 'far';
 	type DialogMode = 'closed' | 'create' | 'edit';
 
-	interface AstronautValues {
-		first_name: string;
-		last_name: string;
-		role: string;
-		tone: CrewTone;
-	}
-
 	let { data }: PageProps = $props();
-
 	const initialCrew = untrack(() => data.crew.astronauts);
-	const initialNextId = initialCrew.reduce((max, astronaut) => Math.max(max, astronaut.id), 0) + 1;
-
-	// Local working copy: this dashboard is a mockup, so every change stays in
-	// memory and is never persisted.
-	let crew = $state<Astronaut[]>(untrack(() => data.crew.astronauts));
+	let crew = $derived(data.crew.astronauts);
 	let selectedId = $state<number | null>(initialCrew[0]?.id ?? null);
 	let settings = $state<CrewSettings>({ ...DEFAULT_CREW_SETTINGS });
 	let sheetId = $state<number | null>(null);
 	let dialogMode = $state<DialogMode>('closed');
 	let settingsOpen = $state(false);
 	let announcement = $state('');
-	let nextId = $state(initialNextId);
 	let isFullscreen = $state(false);
 	let railEl = $state<HTMLDivElement | null>(null);
 
@@ -152,71 +133,21 @@
 		dialogMode = 'edit';
 	}
 
-	function handleToggle(astronautId: number, taskId: number): void {
-		const current = crew.find((astronaut) => astronaut.id === astronautId);
-		if (!current) return;
-
-		const before = levelProgress(current.xp_total).level;
-		const updated = toggleCrewTask(current, taskId);
-		const after = levelProgress(updated.xp_total).level;
-		const task = updated.tasks.find((item) => item.id === taskId);
-
-		crew = crew.map((astronaut) => (astronaut.id === astronautId ? updated : astronaut));
-
-		if (after > before) {
-			announcement = `¡Nivel ${after}! ${astronautName(updated)} subió de nivel.`;
-		} else if (task) {
-			announcement = task.done
-				? `Tarea completada: ${task.title}, +${task.xp} XP`
-				: `Tarea reabierta: ${task.title}`;
-		}
-	}
-
-	function handleSave(values: AstronautValues): void {
-		if (dialogMode === 'create') {
-			const astronaut = createCrewAstronaut({ ...values, id: nextId });
-			nextId += 1;
-			crew = [...crew, astronaut];
-			selectedId = astronaut.id;
-			announcement = `Tripulante creado: ${astronautName(astronaut)}`;
-		} else if (dialogMode === 'edit' && selected) {
-			crew = crew.map((astronaut) =>
-				astronaut.id === selected.id ? { ...astronaut, ...values } : astronaut
-			);
-			announcement = `Perfil actualizado: ${values.first_name} ${values.last_name}`;
-		}
-
-		dialogMode = 'closed';
-	}
-
-	function handleDelete(): void {
-		if (!selected) return;
-		if (!confirm(`¿Eliminar a ${astronautName(selected)} de la tripulación?`)) return;
-
-		const index = selectedIndex;
-		const remaining = crew.filter((astronaut) => astronaut.id !== selected.id);
-		crew = remaining;
-
-		const neighbor = remaining[Math.min(index, remaining.length - 1)] ?? null;
-		selectedId = neighbor?.id ?? null;
-		dialogMode = 'closed';
-		announcement = 'Tripulante eliminado de la tripulación.';
-	}
-
 	function handleSettingChange(key: keyof CrewSettings, value: boolean): void {
 		settings = { ...settings, [key]: value };
 	}
 
 	function resetDemo(): void {
-		crew = structuredClone(initialCrew);
 		settings = { ...DEFAULT_CREW_SETTINGS };
-		nextId = initialNextId;
-		selectedId = crew[0]?.id ?? null;
-		sheetId = null;
-		dialogMode = 'closed';
 		settingsOpen = false;
-		announcement = 'Demo restablecida.';
+		announcement = 'Preferencias restablecidas.';
 	}
+
+	$effect(() => {
+		if (!crew.some((astronaut) => astronaut.id === selectedId)) {
+			selectedId = crew[0]?.id ?? null;
+		}
+	});
 
 	async function toggleFullscreen(): Promise<void> {
 		if (!browser || !fullscreenSupported) return;
@@ -295,6 +226,7 @@
 		<div class="min-w-0">
 			<p class="font-mono text-xs font-semibold tracking-[0.3em] text-white">ASTROLIFE</p>
 			<p class="mt-1 text-xs text-slate-400">Centro de control</p>
+			<p class="mt-1 text-[11px] text-teal-300">Datos iniciales ficticios</p>
 		</div>
 
 		<div class="flex items-center gap-2">
@@ -481,8 +413,6 @@
 		mode={dialogMode}
 		astronaut={dialogMode === 'edit' ? selected : null}
 		onclose={closeDialog}
-		onsave={handleSave}
-		ondelete={dialogMode === 'edit' ? handleDelete : undefined}
 	/>
 {/if}
 
@@ -497,7 +427,6 @@
 
 <AstronautSheet
 	astronaut={sheetAstronaut}
-	ontoggle={handleToggle}
 	onclose={() => (sheetId = null)}
 	onedit={handleSheetEdit}
 />

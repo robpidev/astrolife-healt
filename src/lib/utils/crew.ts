@@ -154,6 +154,8 @@ export function onboardingTasks(astronautId: number): CrewTask[] {
 export function createCrewAstronaut(input: NewAstronautInput): Astronaut {
 	return {
 		...input,
+		nationality: input.nationality ?? null,
+		sex: input.sex ?? null,
 		status: 'entrenamiento',
 		avatar_url: null,
 		xp_total: 0,
