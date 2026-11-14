@@ -26,7 +26,6 @@
 	const XP_CELLS = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
 
 	let dialogEl = $state<HTMLDialogElement | null>(null);
-	let announcement = $state('');
 
 	// Single driver for opening/closing. The parent owns `astronaut`, so any
 	// user-initiated close only notifies the parent and lets this effect close
@@ -63,9 +62,8 @@
 		const current = astronaut;
 		if (!current) return;
 
-		announcement = task.done
-			? `Tarea reabierta: ${task.title}`
-			: `Tarea completada: ${task.title}, +${task.xp} XP`;
+		// The page owns the single polite live region, so the toggle is
+		// announced once even while the sheet is open.
 		ontoggle(current.id, task.id);
 	}
 </script>
@@ -78,8 +76,6 @@
 	onclick={handleBackdropClick}
 	onclose={handleDialogClose}
 >
-	<p class="sr-only" aria-live="polite">{announcement}</p>
-
 	{#if astronaut}
 		{@const tone = crewTones[astronaut.tone]}
 		{@const status = crewStatuses[astronaut.status]}

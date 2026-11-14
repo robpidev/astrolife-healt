@@ -4,6 +4,20 @@ export type CrewStatus = 'mision' | 'entrenamiento' | 'descanso';
 /** Visual family used by the crew dashboard to theme each astronaut's card. */
 export type CrewTone = 'indigo' | 'cyan' | 'violet' | 'amber' | 'emerald';
 
+/**
+ * Canonical roles. The mock data and the create/edit form both read this list,
+ * so a seeded role can never fall outside the select options.
+ */
+export const CREW_ROLES = [
+	'Comandante de vuelo',
+	'Piloto de vuelo',
+	'Médico/a de vuelo',
+	'Ingeniero/a de sistemas',
+	'Especialista de misión'
+] as const;
+
+export type CrewRole = (typeof CREW_ROLES)[number];
+
 /** Category of a crew task; drives the icon and the colour of its chip. */
 export type CrewTaskKind = 'salud' | 'entrenamiento' | 'mision' | 'logistica';
 

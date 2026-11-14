@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { untrack } from 'svelte';
 	import { browser } from '$app/env';
+	import { CREW_ROLES } from '#lib/interfaces/astronaut.js';
 	import type { Astronaut, CrewTone } from '#lib/interfaces/astronaut.js';
 	import { crewTones } from '#lib/utils/crew-theme.js';
 
@@ -20,14 +21,6 @@
 	}
 
 	let { mode, astronaut, onclose, onsave, ondelete }: Props = $props();
-
-	const ROLES = [
-		'Comandante de vuelo',
-		'Piloto de vuelo',
-		'Médico/a de vuelo',
-		'Ingeniero/a de sistemas',
-		'Especialista de misión'
-	];
 
 	const TONES: CrewTone[] = ['indigo', 'cyan', 'violet', 'amber', 'emerald'];
 	const TONE_LABELS: Record<CrewTone, string> = {
@@ -66,6 +59,27 @@
 
 	function handleDialogClose(): void {
 		onclose();
+	}
+
+	function handleToneKeydown(event: KeyboardEvent): void {
+		const keys = ['ArrowRight', 'ArrowDown', 'ArrowLeft', 'ArrowUp', 'Home', 'End'];
+		if (!keys.includes(event.key)) return;
+
+		event.preventDefault();
+		const current = TONES.indexOf(tone);
+		const delta = event.key === 'ArrowRight' || event.key === 'ArrowDown' ? 1 : -1;
+		const next =
+			event.key === 'Home'
+				? 0
+				: event.key === 'End'
+					? TONES.length - 1
+					: (current + delta + TONES.length) % TONES.length;
+
+		tone = TONES[next];
+		(event.currentTarget as HTMLElement)
+			.closest('[role="radiogroup"]')
+			?.querySelector<HTMLButtonElement>(`[data-tone="${TONES[next]}"]`)
+			?.focus();
 	}
 
 	function submit(): void {
@@ -192,7 +206,7 @@
 					class="mt-1 block min-h-11 w-full rounded-xl border border-white/10 bg-slate-900 px-3 text-sm text-white focus:border-teal-400 focus-visible:ring-2 focus-visible:ring-teal-400 focus-visible:outline-none"
 				>
 					<option value="" disabled>Selecciona un rol</option>
-					{#each ROLES as option (option)}
+					{#each CREW_ROLES as option (option)}
 						<option value={option}>{option}</option>
 					{/each}
 				</select>
@@ -210,6 +224,9 @@
 							role="radio"
 							aria-checked={tone === option}
 							aria-label={TONE_LABELS[option]}
+							tabindex={tone === option ? 0 : -1}
+							data-tone={option}
+							onkeydown={handleToneKeydown}
 							onclick={() => (tone = option)}
 							class="grid size-11 place-items-center rounded-full ring-2 ring-offset-2 ring-offset-slate-950 transition focus-visible:ring-teal-400 focus-visible:outline-none {crewTones[
 								option

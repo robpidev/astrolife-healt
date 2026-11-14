@@ -27,8 +27,8 @@
 
 	const tierOpacity: Record<Tier, string> = {
 		center: 'opacity-100 hover:opacity-100',
-		near: 'opacity-75 hover:opacity-90',
-		far: 'opacity-45 hover:opacity-90'
+		near: 'opacity-75 hover:opacity-100',
+		far: 'opacity-60 hover:opacity-100'
 	};
 
 	const avatarSize: Record<Tier, 'md' | 'lg' | 'xl'> = {
@@ -62,14 +62,14 @@
 <button
 	type="button"
 	data-selected={selected}
-	aria-pressed={selected}
+	aria-current={selected ? 'true' : undefined}
 	aria-label={selected ? `Abrir ficha de ${name}` : `Seleccionar a ${name}`}
 	onclick={() => onselect(astronaut)}
 	class="group relative flex shrink-0 flex-col overflow-hidden rounded-3xl text-left {tierSize[
 		tier
 	]} {tierOpacity[tier]} {selected
 		? 'ring-2 ring-white/80 ring-offset-2 ring-offset-slate-950'
-		: 'ring-1 ring-white/10'} focus-visible:ring-2 focus-visible:ring-teal-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950 focus-visible:outline-none {reducedMotion
+		: 'ring-1 ring-white/10'} focus-visible:opacity-100 focus-visible:ring-2 focus-visible:ring-teal-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950 focus-visible:outline-none {reducedMotion
 		? ''
 		: 'transition-[width,height,opacity] duration-500 ease-out'}"
 >

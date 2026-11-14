@@ -5,13 +5,8 @@
 
 	let { children }: LayoutProps = $props();
 
-	let onCrew = $derived(page.url.pathname === '/');
 	let onMediciones = $derived(page.url.pathname.startsWith('/mediciones'));
 </script>
-
-<svelte:head>
-	<title>Astrolife · Monitoreo de salud</title>
-</svelte:head>
 
 <div class="flex min-h-screen flex-col bg-slate-50 text-slate-900 antialiased">
 	<header class="sticky top-0 z-30 border-b border-slate-200/80 bg-white/90 backdrop-blur">
@@ -50,10 +45,7 @@
 					<li>
 						<a
 							href={resolve('/(crew)')}
-							aria-current={onCrew ? 'page' : undefined}
-							class="inline-flex min-h-11 items-center rounded-lg px-3 text-sm font-medium transition focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 focus-visible:outline-none {onCrew
-								? 'bg-teal-50 text-teal-700'
-								: 'text-slate-600 hover:bg-slate-100'}"
+							class="inline-flex min-h-11 items-center rounded-lg px-3 text-sm font-medium text-slate-600 transition hover:bg-slate-100 focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 focus-visible:outline-none"
 						>
 							Tripulación
 						</a>

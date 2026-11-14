@@ -33,6 +33,7 @@
 	let { data }: PageProps = $props();
 
 	const initialCrew = untrack(() => data.crew.astronauts);
+	const initialNextId = initialCrew.reduce((max, astronaut) => Math.max(max, astronaut.id), 0) + 1;
 
 	// Local working copy: this dashboard is a mockup, so every change stays in
 	// memory and is never persisted.
@@ -43,6 +44,7 @@
 	let dialogMode = $state<DialogMode>('closed');
 	let settingsOpen = $state(false);
 	let announcement = $state('');
+	let nextId = $state(initialNextId);
 	let isFullscreen = $state(false);
 	let railEl = $state<HTMLDivElement | null>(null);
 
@@ -53,7 +55,6 @@
 		crew.reduce((total, astronaut) => total + crewTaskProgress(astronaut.tasks).pending, 0)
 	);
 	let activeCount = $derived(crew.filter((astronaut) => astronaut.status !== 'descanso').length);
-	let nextId = $derived(crew.reduce((max, astronaut) => Math.max(max, astronaut.id), 0) + 1);
 	let canPrev = $derived(selectedIndex > 0);
 	let canNext = $derived(selectedIndex >= 0 && selectedIndex < crew.length - 1);
 	let missionDay = $derived(data.crew.summary.mission_day);
@@ -82,7 +83,8 @@
 		target?.scrollIntoView({
 			inline: 'center',
 			block: 'nearest',
-			behavior: settings.reduced_motion ? 'auto' : 'smooth'
+			// Untracked: toggling the setting should not re-scroll the rail.
+			behavior: untrack(() => settings.reduced_motion) ? 'auto' : 'smooth'
 		});
 	});
 
@@ -99,7 +101,17 @@
 
 		const current = selectedIndex < 0 ? 0 : selectedIndex;
 		const next = Math.min(crew.length - 1, Math.max(0, current + delta));
-		selectAt(next);
+		const astronaut = crew[next];
+		if (!astronaut) return;
+
+		selectedId = astronaut.id;
+		announcement = `Seleccionado: ${astronautName(astronaut)}`;
+
+		// Roving focus: Enter after arrowing must act on the new poster, not on
+		// the one that still owns DOM focus.
+		railEl
+			?.querySelector<HTMLElement>(`[data-astronaut-id="${astronaut.id}"] button`)
+			?.focus({ preventScroll: true });
 	}
 
 	function handleSelect(astronaut: Astronaut): void {
@@ -163,6 +175,7 @@
 	function handleSave(values: AstronautValues): void {
 		if (dialogMode === 'create') {
 			const astronaut = createCrewAstronaut({ ...values, id: nextId });
+			nextId += 1;
 			crew = [...crew, astronaut];
 			selectedId = astronaut.id;
 			announcement = `Tripulante creado: ${astronautName(astronaut)}`;
@@ -197,6 +210,7 @@
 	function resetDemo(): void {
 		crew = structuredClone(initialCrew);
 		settings = { ...DEFAULT_CREW_SETTINGS };
+		nextId = initialNextId;
 		selectedId = crew[0]?.id ?? null;
 		sheetId = null;
 		dialogMode = 'closed';
@@ -224,7 +238,8 @@
 
 	function handleKeydown(event: KeyboardEvent): void {
 		if (dialogMode !== 'closed' || sheetId !== null || settingsOpen) return;
-		if (event.metaKey || event.ctrlKey || event.altKey) return;
+		if (event.defaultPrevented || event.isComposing) return;
+		if (event.metaKey || event.ctrlKey || event.altKey || event.shiftKey) return;
 
 		const target = event.target;
 		if (target instanceof HTMLElement && ['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName)) {
