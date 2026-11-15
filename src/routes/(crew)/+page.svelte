@@ -1,5 +1,7 @@
 <script lang="ts">
 	import { untrack } from 'svelte';
+	import { afterNavigate, goto } from '$app/navigation';
+	import { resolve } from '$app/paths';
 	import { browser } from '$app/env';
 	import type { Astronaut, CrewTone } from '#lib/interfaces/astronaut.js';
 	import type { CrewSettings } from '#lib/interfaces/settings.js';
@@ -68,6 +70,18 @@
 		})
 	);
 
+	// The dashboard keeps its state in memory, so it resets when we come back
+	// from a profile. Re-select the astronaut whose page we just left.
+	afterNavigate((navigation) => {
+		const from = navigation.from;
+		if (from?.route?.id !== '/(crew)/crew/[id]') return;
+
+		const id = Number(from.params?.id);
+		if (Number.isInteger(id) && crew.some((astronaut) => astronaut.id === id)) {
+			selectedId = id;
+		}
+	});
+
 	// Keep the focused poster centered in the rail. Effects run after DOM
 	// updates, so the newly selected element already exists.
 	$effect(() => {
@@ -115,8 +129,13 @@
 	}
 
 	function handleSelect(astronaut: Astronaut): void {
+		// First click selects the poster, second click (anywhere on it) opens
+		// the profile page.
 		if (astronaut.id === selectedId) {
-			openSheet(astronaut);
+			goto(resolve('/(crew)/crew/[id]', { id: String(astronaut.id) })).catch(() => {
+				// Navigation failures keep the user on the dashboard; nothing to
+				// announce because the rail already shows the selected poster.
+			});
 			return;
 		}
 

@@ -116,12 +116,22 @@ const ASTRONAUTS: Astronaut[] = [
 const MISSION_DAY = 148;
 const WEEKLY_XP = 8640;
 
-export function getCrewDashboard(): CrewDashboard {
-	const astronauts = ASTRONAUTS.map((astronaut) => ({
+function cloneAstronaut(astronaut: Astronaut): Astronaut {
+	return {
 		...astronaut,
 		tasks: astronaut.tasks.map((task) => ({ ...task })),
 		badges: [...astronaut.badges]
-	}));
+	};
+}
+
+/** Single astronaut for the profile route; `null` when the id is unknown. */
+export function getAstronaut(id: number): Astronaut | null {
+	const astronaut = ASTRONAUTS.find((item) => item.id === id);
+	return astronaut ? cloneAstronaut(astronaut) : null;
+}
+
+export function getCrewDashboard(): CrewDashboard {
+	const astronauts = ASTRONAUTS.map(cloneAstronaut);
 
 	return {
 		summary: {
