@@ -15,7 +15,7 @@ no separate API, backend service, or mobile app.
 | Language        | TypeScript, `strict: true`                                                     |
 | Styles          | Tailwind CSS 4 (`src/routes/layout.css`) with `forms` and `typography` plugins |
 | Database        | SQLite via `node:sqlite` (`DatabaseSync`); works on Bun 1.4 and Node 24        |
-| Tests           | Vitest `server` project (Node); browser tests are out of scope for agents      |
+| Tests           | Vitest, Node only (single `server` project); no browser tests                  |
 | Deploy          | `@sveltejs/adapter-vercel`                                                     |
 | Package manager | bun                                                                            |
 
@@ -162,10 +162,9 @@ bun run lint    # prettier --check + eslint (when touching many files)
 ```
 
 Smoke-test the changed flow in the browser (submit, reload, confirm persistence)
-before reporting. Run the server tests (`bun run test:unit -- --run --project
-server`) only when the user asks or for risky changes (DB schema, form actions).
-Agents do not run the Playwright browser (`client`) test project. Run
-`bun run build` before deploying.
+before reporting. Run the tests (`bun run test:unit -- --run`) only when the user
+asks or for risky changes (DB schema, form actions). There is no browser test
+project, so the suite starts no Chromium. Run `bun run build` before deploying.
 
 Report the commands run and their results. Never claim a check passed without
 seeing the output. Separate new failures from pre-existing ones.
