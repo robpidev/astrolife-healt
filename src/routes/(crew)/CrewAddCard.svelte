@@ -1,7 +1,6 @@
 <script lang="ts">
 	interface Props {
 		onadd: () => void;
-		/** Full-size card used only by the empty state. */
 		large?: boolean;
 	}
 
