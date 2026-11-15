@@ -98,7 +98,7 @@ export const healthAreas = [
 		metrics: [
 			{
 				id: 'temperature',
-				label: 'Temperature',
+				label: 'Body temperature',
 				unit: '°C'
 			},
 			{
