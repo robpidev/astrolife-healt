@@ -6,26 +6,17 @@
 
 	interface Props {
 		astronaut: Astronaut;
-		/** The poster pinned to the centre of the rail. */
 		focused: boolean;
-		/** Continuous 0..1 proximity used for the cards riding behind. */
 		nearness: number;
 		reducedMotion: boolean;
 		onselect: (astronaut: Astronaut) => void;
 	}
-
 	let { astronaut, focused, nearness, reducedMotion, onselect }: Props = $props();
-
 	const numberFormat = new Intl.NumberFormat('en', { useGrouping: 'always' });
 	const XP_CELLS = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
-
-	// Extra metadata fades in as a poster approaches the centre. The elements
-	// always stay in the DOM so the width transition morphs the whole card
-	// instead of swapping its contents at a threshold.
 	let showDetails = $derived(nearness > 0.45);
 	let detailState = $derived(showDetails ? 'opacity-100' : 'opacity-0');
 	let detailMotion = $derived(reducedMotion ? '' : 'transition-opacity duration-[420ms] ease-out');
-
 	let name = $derived(astronautName(astronaut));
 	let tone = $derived(crewTones[astronaut.tone]);
 	let status = $derived(crewStatuses[astronaut.status]);
@@ -45,7 +36,7 @@
 	data-selected={focused}
 	data-astro-id={astronaut.id}
 	aria-current={focused ? 'true' : undefined}
-	aria-label={focused ? `Open ${name}'s profile` : `Select ${name}`}
+	aria-label={`Select ${name}`}
 	onclick={() => onselect(astronaut)}
 	class="poster group relative block aspect-[3/4] w-full shrink-0 overflow-hidden rounded-3xl text-left {focused
 		? 'ring-2 ring-white/80'
@@ -70,12 +61,6 @@
 		<span class="size-[1.6cqw] rounded-full {status.dot}" aria-hidden="true"></span>
 		<span class="{detailMotion} {detailState}">{status.label}</span>
 	</span>
-
-	<!--
-		The portrait is pinned to the card's mid line: the image stays centred
-		while the poster grows up and down, which is the whole point of the
-		"scaled card, always centred" behaviour.
-	-->
 	<span
 		class="pointer-events-none absolute inset-x-0 top-1/2 grid -translate-y-1/2 place-items-center"
 		aria-hidden="true"
@@ -137,7 +122,6 @@
 </button>
 
 <style>
-	/* Container queries make the internal layout follow the poster's own width. */
 	.poster {
 		container-type: inline-size;
 	}

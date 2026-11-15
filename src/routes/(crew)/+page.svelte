@@ -79,18 +79,16 @@
 	}
 
 	function handleSelect(astronaut: Astronaut): void {
-		// First click selects the poster, second click (anywhere on it) opens
-		// the profile page.
-		if (astronaut.id === selectedId) {
-			goto(resolve('/(crew)/crew/[id]', { id: String(astronaut.id) })).catch(() => {
-				// Navigation failures keep the user on the dashboard; nothing to
-				// announce because the rail already shows the selected poster.
-			});
-			return;
-		}
-
+		// Selection never opens a profile, including clicks on the active poster.
 		selectedId = astronaut.id;
 		announcement = `Selected: ${astronautName(astronaut)}`;
+	}
+
+	function viewSelectedProfile(): void {
+		if (!selected) return;
+		goto(resolve('/(crew)/crew/[id]', { id: String(selected.id) })).catch(() => {
+			announcement = 'Could not open the astronaut profile.';
+		});
 	}
 
 	function openSheet(astronaut: Astronaut): void {
@@ -241,6 +239,7 @@
 		onprev={() => moveSelection(-1)}
 		onnext={() => moveSelection(1)}
 		onselect={selectAt}
+		onopen={viewSelectedProfile}
 		onadd={openCreate}
 	/>
 </div>

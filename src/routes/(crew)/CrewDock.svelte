@@ -8,9 +8,10 @@
 		onnext: () => void;
 		onselect: (index: number) => void;
 		onadd: () => void;
+		onopen: () => void;
 	}
 
-	let { total, index, canPrev, canNext, onprev, onnext, onselect, onadd }: Props = $props();
+	let { total, index, canPrev, canNext, onprev, onnext, onselect, onadd, onopen }: Props = $props();
 
 	let dots = $derived(Array.from({ length: total }, (_, i) => i));
 </script>
@@ -78,6 +79,17 @@
 			>
 				<path d="M9 6l6 6-6 6" />
 			</svg>
+		</button>
+
+		<button
+			type="button"
+			disabled={index < 0}
+			onclick={onopen}
+			aria-label="View selected astronaut profile"
+			class="ml-1 inline-flex min-h-11 shrink-0 items-center gap-1.5 rounded-xl border border-white/15 bg-white/10 px-3 text-sm font-semibold text-white transition hover:bg-white/20 focus-visible:ring-2 focus-visible:ring-teal-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950 focus-visible:outline-none disabled:opacity-40 sm:px-4"
+		>
+			<span class="hidden sm:inline">View profile</span>
+			<span class="sm:hidden">Profile</span>
 		</button>
 
 		<button
