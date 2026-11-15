@@ -1,7 +1,10 @@
 <script lang="ts">
+	import { enhance } from '$app/forms';
+	import { invalidateAll } from '$app/navigation';
+	import type { SubmitFunction } from '@sveltejs/kit';
 	import { browser } from '$app/env';
 	import { resolve } from '$app/paths';
-	import type { Astronaut, CrewTask } from '#lib/interfaces/astronaut.js';
+	import type { Astronaut } from '#lib/interfaces/astronaut.js';
 	import AstronautAvatar from '#lib/components/AstronautAvatar.svelte';
 	import CrewTaskIcon from '#lib/components/CrewTaskIcon.svelte';
 	import {
@@ -15,12 +18,11 @@
 
 	interface Props {
 		astronaut: Astronaut | null;
-		ontoggle: (astronautId: number, taskId: number) => void;
 		onclose: () => void;
 		onedit: () => void;
 	}
 
-	let { astronaut, ontoggle, onclose, onedit }: Props = $props();
+	let { astronaut, onclose, onedit }: Props = $props();
 
 	const numberFormat = new Intl.NumberFormat('es', { useGrouping: 'always' });
 	const XP_CELLS = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
@@ -58,14 +60,22 @@
 		if (astronaut) requestClose();
 	}
 
-	function toggleTask(task: CrewTask): void {
-		const current = astronaut;
-		if (!current) return;
-
-		// The page owns the single polite live region, so the toggle is
-		// announced once even while the sheet is open.
-		ontoggle(current.id, task.id);
-	}
+	let pending = $state(false);
+	let message = $state('');
+	const toggleTask: SubmitFunction = () => {
+		pending = true;
+		message = '';
+		return async ({ result }) => {
+			pending = false;
+			if (result.type === 'success') await invalidateAll();
+			else {
+				message =
+					result.type === 'failure' && typeof result.data?.message === 'string'
+						? result.data.message
+						: 'No se pudo actualizar la tarea. Intenta nuevamente.';
+			}
+		};
+	};
 </script>
 
 <dialog
@@ -103,6 +113,9 @@
 						{name}
 					</h2>
 					<p class="truncate text-sm text-slate-400">{astronaut.role}</p>
+					<p class="mt-1 text-xs text-slate-400">
+						{astronaut.nationality ?? 'Nacionalidad sin registrar'} · {astronaut.sex === 'no_especificado' || !astronaut.sex ? 'Sexo no especificado' : astronaut.sex}
+					</p>
 					<span
 						class="mt-2 inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium ring-1 ring-inset {status.pill}"
 					>
@@ -193,6 +206,12 @@
 				</section>
 
 				<section class="mt-6" aria-labelledby="crew-sheet-tasks">
+					{#if message}
+						<p role="alert" class="mb-3 text-sm text-rose-300">{message}</p>
+					{/if}
+					{#if pending}
+						<p role="status" class="mb-3 text-sm text-teal-300">Guardando tarea…</p>
+					{/if}
 					<div class="flex items-center justify-between gap-3">
 						<h3
 							id="crew-sheet-tasks"
@@ -209,60 +228,64 @@
 						<ul class="mt-3 space-y-2">
 							{#each astronaut.tasks as task (task.id)}
 								<li>
-									<button
-										type="button"
-										aria-pressed={task.done}
-										class="flex min-h-12 w-full items-center gap-3 rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-left transition hover:bg-white/10 focus-visible:ring-2 focus-visible:ring-teal-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950 focus-visible:outline-none"
-										onclick={() => toggleTask(task)}
-									>
-										{#if task.done}
-											<span
-												class="grid size-8 shrink-0 place-items-center rounded-full bg-emerald-400/15 text-emerald-300 ring-1 ring-emerald-400/30 ring-inset"
-												aria-hidden="true"
-											>
-												<svg
-													viewBox="0 0 24 24"
-													fill="none"
-													stroke="currentColor"
-													stroke-width="2"
-													stroke-linecap="round"
-													stroke-linejoin="round"
-													class="size-4"
-												>
-													<path d="m5 12.5 4.5 4.5L19 7" />
-												</svg>
-											</span>
-										{:else}
-											<span
-												class="grid size-8 shrink-0 place-items-center rounded-lg ring-1 ring-inset {crewTaskKinds[
-													task.kind
-												].chip}"
-											>
-												<CrewTaskIcon kind={task.kind} />
-											</span>
-										{/if}
-
-										<span class="min-w-0 flex-1">
-											<span
-												class="block text-sm font-medium {task.done
-													? 'text-slate-500 line-through'
-													: 'text-slate-100'}"
-											>
-												{task.title}
-											</span>
-											<span class="mt-0.5 block text-xs text-slate-400">
-												{crewTaskKinds[task.kind].label}
-											</span>
-										</span>
-
-										<span
-											class="shrink-0 font-mono text-xs font-medium tabular-nums {task.done
-												? 'text-slate-500'
-												: 'text-teal-300'}"
+									<form method="POST" action="?/toggleTask" use:enhance={toggleTask}>
+										<input type="hidden" name="id" value={astronaut.id} />
+										<input type="hidden" name="task_id" value={task.id} />
+										<button
+											type="submit"
+											disabled={pending}
+											aria-pressed={task.done}
+											class="flex min-h-12 w-full items-center gap-3 rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-left transition hover:bg-white/10 focus-visible:ring-2 focus-visible:ring-teal-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950 focus-visible:outline-none"
 										>
-											{task.done ? 'Completada' : `+${task.xp} XP`}
-										</span>
-									</button>
+											{#if task.done}
+												<span
+													class="grid size-8 shrink-0 place-items-center rounded-full bg-emerald-400/15 text-emerald-300 ring-1 ring-emerald-400/30 ring-inset"
+													aria-hidden="true"
+												>
+													<svg
+														viewBox="0 0 24 24"
+														fill="none"
+														stroke="currentColor"
+														stroke-width="2"
+														stroke-linecap="round"
+														stroke-linejoin="round"
+														class="size-4"
+													>
+														<path d="m5 12.5 4.5 4.5L19 7" />
+													</svg>
+												</span>
+											{:else}
+												<span
+													class="grid size-8 shrink-0 place-items-center rounded-lg ring-1 ring-inset {crewTaskKinds[
+														task.kind
+													].chip}"
+												>
+													<CrewTaskIcon kind={task.kind} />
+												</span>
+											{/if}
+
+											<span class="min-w-0 flex-1">
+												<span
+													class="block text-sm font-medium {task.done
+														? 'text-slate-500 line-through'
+														: 'text-slate-100'}"
+												>
+													{task.title}
+												</span>
+												<span class="mt-0.5 block text-xs text-slate-400">
+													{crewTaskKinds[task.kind].label}
+												</span>
+											</span>
+
+											<span
+												class="shrink-0 font-mono text-xs font-medium tabular-nums {task.done
+													? 'text-slate-500'
+													: 'text-teal-300'}"
+											>
+												{task.done ? 'Completada' : `+${task.xp} XP`}
+											</span>
+										</button>
+									</form>
 								</li>
 							{/each}
 						</ul>
@@ -315,7 +338,7 @@
 				</section>
 
 				<p class="mt-6 rounded-xl bg-white/5 px-3 py-2 text-xs text-slate-400">
-					Vista previa: los cambios no se guardan todavía.
+					Las tareas y el progreso se guardan en la base de datos local.
 				</p>
 
 				<div class="mt-3 grid gap-2">

@@ -15,6 +15,8 @@ import {
 } from '#lib/utils/crew.js';
 
 const astronaut: Astronaut = {
+	nationality: 'Peruana',
+	sex: 'femenino',
 	id: 1,
 	first_name: 'Valentina',
 	last_name: 'Ríos',

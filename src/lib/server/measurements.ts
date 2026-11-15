@@ -33,18 +33,18 @@ function getStatements(): Statements {
 	const db = getDb();
 
 	statements = {
-		list: db.prepare(`SELECT ${COLUMNS} FROM measurements ORDER BY measured_at DESC, id DESC`),
-		get: db.prepare(`SELECT ${COLUMNS} FROM measurements WHERE id = ?`),
+		list: db.prepare(`SELECT ${COLUMNS} FROM personal_measurements ORDER BY measured_at DESC, id DESC`),
+		get: db.prepare(`SELECT ${COLUMNS} FROM personal_measurements WHERE id = ?`),
 		insert: db.prepare(
-			`INSERT INTO measurements (measured_at, mass_kg, height_cm, systolic, diastolic, pulse, notes)
+			`INSERT INTO personal_measurements (measured_at, mass_kg, height_cm, systolic, diastolic, pulse, notes)
 			 VALUES (?, ?, ?, ?, ?, ?, ?)`
 		),
 		update: db.prepare(
-			`UPDATE measurements
+			`UPDATE personal_measurements
 			 SET measured_at = ?, mass_kg = ?, height_cm = ?, systolic = ?, diastolic = ?, pulse = ?, notes = ?
 			 WHERE id = ?`
 		),
-		remove: db.prepare('DELETE FROM measurements WHERE id = ?')
+		remove: db.prepare('DELETE FROM personal_measurements WHERE id = ?')
 	};
 
 	return statements;

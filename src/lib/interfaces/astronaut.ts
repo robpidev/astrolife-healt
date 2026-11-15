@@ -30,7 +30,11 @@ export interface CrewTask {
 	xp: number;
 }
 
+export type AstronautSex = 'femenino' | 'masculino' | 'intersexual' | 'no_especificado';
+
 export interface Astronaut {
+	nationality: string | null;
+	sex: AstronautSex | null;
 	id: number;
 	first_name: string;
 	last_name: string;
@@ -66,6 +70,8 @@ export interface CrewDashboard {
 }
 
 export interface NewAstronautInput {
+	nationality?: string | null;
+	sex?: AstronautSex | null;
 	id: number;
 	first_name: string;
 	last_name: string;
