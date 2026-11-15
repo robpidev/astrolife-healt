@@ -22,34 +22,34 @@
 	const APPEARANCE: ToggleRow[] = [
 		{
 			key: 'reduced_motion',
-			label: 'Reducir movimiento',
-			description: 'Desactiva transiciones y animaciones del escenario.'
+			label: 'Reduce motion',
+			description: 'Disable stage transitions and animations.'
 		},
 		{
 			key: 'high_contrast',
-			label: 'Alto contraste',
-			description: 'Refuerza textos y bordes para pantallas con luz directa.'
+			label: 'High contrast',
+			description: 'Strengthen text and borders for bright-light screens.'
 		}
 	];
 
 	const SOUND: ToggleRow[] = [
 		{
 			key: 'sound',
-			label: 'Sonidos de interfaz',
-			description: 'Reproduce un tono al completar tareas.'
+			label: 'Interface sounds',
+			description: 'Play a tone when tasks are completed.'
 		}
 	];
 
 	const KIOSK: ToggleRow[] = [
 		{
 			key: 'keep_awake',
-			label: 'Mantener despierto',
-			description: 'Evita que la pantalla se apague en modo kiosco.'
+			label: 'Keep awake',
+			description: 'Prevent the screen from sleeping in kiosk mode.'
 		},
 		{
 			key: 'kiosk_lock',
-			label: 'Bloqueo de kiosco',
-			description: 'Oculta salidas de navegación mientras la demo está activa.'
+			label: 'Kiosk lock',
+			description: 'Hide navigation exits while the demo is active.'
 		}
 	];
 
@@ -89,16 +89,16 @@
 		>
 			<div class="min-w-0">
 				<p class="text-[11px] font-semibold tracking-[0.14em] text-teal-300 uppercase">
-					Centro de control
+					Control center
 				</p>
 				<h2 id="settings-dialog-title" class="mt-1 text-xl font-semibold tracking-tight text-white">
-					Ajustes de la vista
+					Settings
 				</h2>
 			</div>
 			<button
 				type="button"
 				class="grid size-11 shrink-0 place-items-center rounded-full border border-white/10 text-slate-300 transition hover:bg-white/10 hover:text-white focus-visible:ring-2 focus-visible:ring-teal-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950 focus-visible:outline-none"
-				aria-label="Cerrar ajustes"
+				aria-label="Close settings"
 				onclick={requestClose}
 			>
 				<svg
@@ -122,7 +122,7 @@
 					id="settings-appearance"
 					class="text-xs font-semibold tracking-[0.14em] text-slate-400 uppercase"
 				>
-					Apariencia
+					Appearance
 				</h3>
 
 				<div class="mt-2 divide-y divide-white/10 rounded-2xl border border-white/10 bg-white/5">
@@ -158,12 +158,12 @@
 
 					<div class="flex items-center justify-between gap-4 px-4 py-2">
 						<div class="min-w-0">
-							<p class="text-sm font-medium text-slate-100">Tamaño de texto</p>
-							<p class="text-xs text-slate-400">Amplía el nombre y el detalle del perfil.</p>
+							<p class="text-sm font-medium text-slate-100">Text size</p>
+							<p class="text-xs text-slate-400">Enlarge the profile name and details.</p>
 						</div>
 						<div
 							role="group"
-							aria-label="Tamaño de texto"
+							aria-label="Text size"
 							class="flex shrink-0 gap-1 rounded-xl border border-white/10 bg-slate-900 p-1"
 						>
 							<button
@@ -184,7 +184,7 @@
 									? 'bg-teal-500 text-slate-950'
 									: 'text-slate-300 hover:bg-white/10'}"
 							>
-								Grande
+								Large
 							</button>
 						</div>
 					</div>
@@ -196,7 +196,7 @@
 					id="settings-sound"
 					class="text-xs font-semibold tracking-[0.14em] text-slate-400 uppercase"
 				>
-					Sonido
+					Sound
 				</h3>
 				<div class="mt-2 divide-y divide-white/10 rounded-2xl border border-white/10 bg-white/5">
 					{#each SOUND as row (row.key)}
@@ -236,7 +236,7 @@
 					id="settings-kiosk"
 					class="text-xs font-semibold tracking-[0.14em] text-slate-400 uppercase"
 				>
-					Kiosco
+					Kiosk
 				</h3>
 				<div class="mt-2 divide-y divide-white/10 rounded-2xl border border-white/10 bg-white/5">
 					{#each KIOSK as row (row.key)}
@@ -276,25 +276,22 @@
 					id="settings-data"
 					class="text-xs font-semibold tracking-[0.14em] text-slate-400 uppercase"
 				>
-					Datos
+					Data
 				</h3>
 				<div class="mt-2 rounded-2xl border border-white/10 bg-white/5 p-4">
-					<p class="text-sm text-slate-300">
-						Restablecer las preferencias recupera el
-						estado inicial.
-					</p>
+					<p class="text-sm text-slate-300">Resetting preferences restores the initial state.</p>
 					<button
 						type="button"
 						class="mt-3 inline-flex min-h-11 w-full items-center justify-center rounded-xl border border-white/10 px-4 text-sm font-semibold text-slate-100 transition hover:bg-white/10 focus-visible:ring-2 focus-visible:ring-teal-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950 focus-visible:outline-none sm:w-auto"
 						onclick={onreset}
 					>
-						Restablecer preferencias
+						Reset preferences
 					</button>
 				</div>
 			</section>
 
 			<p class="mt-5 rounded-xl bg-white/5 px-3 py-2 text-xs text-slate-400">
-				Vista previa: los ajustes no se guardan todavía.
+				Preview: settings are not saved yet.
 			</p>
 		</div>
 	</div>

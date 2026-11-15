@@ -5,13 +5,13 @@
 
 	let { astronaut }: { astronaut: Astronaut } = $props();
 	let name = $derived(astronautName(astronaut));
-	const statuses = { mision: 'En misión', entrenamiento: 'En entrenamiento', descanso: 'En descanso' };
+	const statuses = { mision: 'On mission', entrenamiento: 'In training', descanso: 'Resting' };
 	let status = $derived(statuses[astronaut.status]);
 </script>
 
 <section
 	class="overflow-hidden rounded-2xl border border-cyan-200/15 bg-[#0b1729]/80"
-	aria-label="Identidad del astronauta"
+	aria-label="Astronaut identity"
 >
 	<div class="flex flex-col items-center border-b border-cyan-200/10 px-5 pt-8 pb-6 text-center">
 		<div class="rounded-full border border-cyan-300/40 p-1.5 shadow-[0_0_28px_0_#22d3ee20]">
@@ -31,25 +31,19 @@
 	</div>
 	<dl class="space-y-5 p-5 text-xs">
 		<div>
-			<dt class="mb-1.5 text-slate-500">
-				Identificador
-			</dt>
+			<dt class="mb-1.5 text-slate-500">Identifier</dt>
 			<dd class="font-mono text-slate-200">
 				ASTRO-{String(astronaut.id).padStart(3, '0')}
 			</dd>
 		</div>
 		<div>
-			<dt class="mb-1.5 text-slate-500">
-				Nacionalidad
-			</dt>
+			<dt class="mb-1.5 text-slate-500">Nationality</dt>
 			<dd class="text-slate-200">
-				{astronaut.nationality ?? 'Sin registrar'}
+				{astronaut.nationality ?? 'Not recorded'}
 			</dd>
 		</div>
 		<div>
-			<dt class="mb-1.5 text-slate-500">
-				Misiones completadas
-			</dt>
+			<dt class="mb-1.5 text-slate-500">Missions completed</dt>
 			<dd class="text-slate-200">
 				{astronaut.missions_completed}
 			</dd>
@@ -57,7 +51,7 @@
 	</dl>
 	<div class="m-4 mt-0 rounded-xl border border-cyan-200/10 bg-cyan-300/5 p-3">
 		<p class="text-sm leading-relaxed text-slate-400">
-			El estado de salud se mostrará cuando existan evaluaciones registradas.
+			Health status will be shown once evaluations are recorded.
 		</p>
 	</div>
 </section>

@@ -6,13 +6,11 @@
 </script>
 
 <svelte:head>
-	<title>
-		Presión arterial · Astrolife
-	</title>
+	<title>Blood pressure · Astrolife</title>
 </svelte:head>
 <div class="space-y-5">
-	<MetricCard title="Presión arterial" unit="mmHg" />
+	<MetricCard title="Blood pressure" unit="mmHg" />
 	<MetricChart />
 	<MetricStatistics />
-	<MetricForm label="Presión arterial" unit="mmHg" />
+	<MetricForm label="Blood pressure" unit="mmHg" />
 </div>

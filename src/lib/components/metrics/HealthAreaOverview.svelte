@@ -15,15 +15,13 @@
 			<HealthIcon name={area.id} />
 		</span>
 		<div class="min-w-0 flex-1">
-			<p class="mb-1 text-xs tracking-[0.18em] text-slate-500 uppercase">
-				Área de salud
-			</p>
-			<h2 class="break-words text-xl font-semibold tracking-tight text-white sm:text-2xl">
+			<p class="mb-1 text-xs tracking-[0.18em] text-slate-500 uppercase">Health area</p>
+			<h2 class="text-xl font-semibold tracking-tight break-words text-white sm:text-2xl">
 				{area.label}
 			</h2>
 		</div>
-		<span class="basis-full text-xs text-slate-500 sm:ml-auto sm:basis-auto sm:shrink-0">
-			Sin mediciones
+		<span class="basis-full text-xs text-slate-500 sm:ml-auto sm:shrink-0 sm:basis-auto">
+			No measurements
 		</span>
 	</header>
 	<div class="grid gap-3 sm:grid-cols-3">
@@ -40,11 +38,10 @@
 		<MetricStatistics />
 	</div>
 	<section class="rounded-xl border border-cyan-200/10 bg-cyan-300/[0.03] p-4">
-		<h3 class="text-xs font-medium text-cyan-100">
-			Interpretación
-		</h3>
+		<h3 class="text-xs font-medium text-cyan-100">Interpretation</h3>
 		<p class="mt-2 text-sm leading-relaxed text-slate-400">
-			Aún no hay datos suficientes para mostrar una interpretación del área. Registra mediciones para comenzar el seguimiento.
+			There is not enough data yet to show an interpretation of this area. Record measurements to
+			start tracking.
 		</p>
 	</section>
 </div>

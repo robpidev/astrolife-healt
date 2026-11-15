@@ -13,7 +13,7 @@ describe('calculateBmi', () => {
 
 describe('bmiCategory', () => {
 	it('classifies underweight', () => {
-		expect(bmiCategory(18.4)).toEqual({ label: 'Bajo peso', tone: 'low' });
+		expect(bmiCategory(18.4)).toEqual({ label: 'Underweight', tone: 'low' });
 	});
 
 	it('classifies normal weight at the boundaries', () => {
@@ -22,11 +22,11 @@ describe('bmiCategory', () => {
 	});
 
 	it('classifies overweight', () => {
-		expect(bmiCategory(25)).toEqual({ label: 'Sobrepeso', tone: 'high' });
-		expect(bmiCategory(29.9)).toEqual({ label: 'Sobrepeso', tone: 'high' });
+		expect(bmiCategory(25)).toEqual({ label: 'Overweight', tone: 'high' });
+		expect(bmiCategory(29.9)).toEqual({ label: 'Overweight', tone: 'high' });
 	});
 
 	it('classifies obesity', () => {
-		expect(bmiCategory(30)).toEqual({ label: 'Obesidad', tone: 'obese' });
+		expect(bmiCategory(30)).toEqual({ label: 'Obese', tone: 'obese' });
 	});
 });

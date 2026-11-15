@@ -25,25 +25,25 @@
 <header class="relative z-20 flex items-start justify-between gap-4 px-5 pt-5 sm:px-8">
 	<div class="min-w-0">
 		<p class="font-mono text-xs font-semibold tracking-[0.3em] text-white">ASTROLIFE</p>
-		<p class="mt-1 text-xs text-slate-400">Centro de control</p>
-		<p class="mt-1 text-[11px] text-teal-300">Datos iniciales ficticios</p>
+		<p class="mt-1 text-xs text-slate-400">Control center</p>
+		<p class="mt-1 text-[11px] text-teal-300">Fictional initial data</p>
 	</div>
 
 	<div class="flex items-center gap-2">
 		<div class="hidden text-right sm:block">
 			<p class="font-mono text-[11px] tracking-[0.18em] text-slate-400 uppercase">
 				{crewCount}
-				{crewCount === 1 ? 'ASTRONAUTA' : 'ASTRONAUTAS'} · DÍA {missionDay}
+				{crewCount === 1 ? 'ASTRONAUT' : 'ASTRONAUTS'} · DAY {missionDay}
 			</p>
 			<p class="mt-1 font-mono text-[10px] tracking-[0.16em] text-slate-500 uppercase">
-				{activeCount} activos · {pendingTotal} pendientes
+				{activeCount} active · {pendingTotal} pending
 			</p>
 		</div>
 
 		<button
 			type="button"
 			disabled={!fullscreenSupported}
-			aria-label={isFullscreen ? 'Salir de pantalla completa' : 'Pantalla completa'}
+			aria-label={isFullscreen ? 'Exit fullscreen' : 'Fullscreen'}
 			onclick={ontogglefullscreen}
 			class="grid size-12 place-items-center rounded-full border border-white/10 bg-white/5 text-slate-200 backdrop-blur transition hover:bg-white/10 focus-visible:ring-2 focus-visible:ring-teal-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-40"
 		>
@@ -78,7 +78,7 @@
 
 		<button
 			type="button"
-			aria-label="Abrir ajustes"
+			aria-label="Open settings"
 			onclick={onopensettings}
 			class="grid size-12 place-items-center rounded-full border border-white/10 bg-white/5 text-slate-200 backdrop-blur transition hover:bg-white/10 focus-visible:ring-2 focus-visible:ring-teal-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950 focus-visible:outline-none"
 		>

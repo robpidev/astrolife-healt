@@ -24,7 +24,7 @@
 		<button
 			type="button"
 			disabled={!canPrev}
-			aria-label="Astronauta anterior"
+			aria-label="Previous astronaut"
 			onclick={onprev}
 			class="grid size-12 shrink-0 place-items-center rounded-xl border border-white/10 text-slate-200 transition hover:bg-white/10 focus-visible:ring-2 focus-visible:ring-teal-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-40"
 		>
@@ -46,7 +46,7 @@
 			{#each dots as dot (dot)}
 				<button
 					type="button"
-					aria-label="Ir al astronauta {dot + 1}"
+					aria-label="Go to astronaut {dot + 1}"
 					aria-pressed={dot === index}
 					onclick={() => onselect(dot)}
 					class="grid size-11 shrink-0 place-items-center rounded-full transition hover:bg-white/10 focus-visible:ring-2 focus-visible:ring-teal-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950 focus-visible:outline-none"
@@ -62,7 +62,7 @@
 		<button
 			type="button"
 			disabled={!canNext}
-			aria-label="Astronauta siguiente"
+			aria-label="Next astronaut"
 			onclick={onnext}
 			class="grid size-12 shrink-0 place-items-center rounded-xl border border-white/10 text-slate-200 transition hover:bg-white/10 focus-visible:ring-2 focus-visible:ring-teal-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-40"
 		>
@@ -83,12 +83,12 @@
 		<button
 			type="button"
 			onclick={onadd}
-			aria-label="Agregar astronauta"
+			aria-label="Add astronaut"
 			class="ml-1 inline-flex min-h-11 shrink-0 items-center gap-1.5 rounded-xl bg-teal-500 px-3 text-sm font-semibold text-slate-950 transition hover:bg-teal-400 focus-visible:ring-2 focus-visible:ring-teal-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950 focus-visible:outline-none sm:px-4"
 		>
 			<span aria-hidden="true" class="text-base leading-none">+</span>
-			<span class="hidden sm:inline">Agregar astronauta</span>
-			<span class="sm:hidden">Agregar</span>
+			<span class="hidden sm:inline">Add astronaut</span>
+			<span class="sm:hidden">Add</span>
 		</button>
 	</div>
 </div>

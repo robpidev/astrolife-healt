@@ -6,13 +6,11 @@
 </script>
 
 <svelte:head>
-	<title>
-		Duración · Astrolife
-	</title>
+	<title>Duration · Astrolife</title>
 </svelte:head>
 <div class="space-y-5">
-	<MetricCard title="Duración" unit="h" />
+	<MetricCard title="Duration" unit="h" />
 	<MetricChart />
 	<MetricStatistics />
-	<MetricForm label="Duración" unit="h" />
+	<MetricForm label="Duration" unit="h" />
 </div>

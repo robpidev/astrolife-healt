@@ -16,7 +16,7 @@
 
 	let { astronaut, focused, nearness, reducedMotion, onselect }: Props = $props();
 
-	const numberFormat = new Intl.NumberFormat('es', { useGrouping: 'always' });
+	const numberFormat = new Intl.NumberFormat('en', { useGrouping: 'always' });
 	const XP_CELLS = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
 
 	// Extra metadata fades in as a poster approaches the centre. The elements
@@ -34,12 +34,10 @@
 	let filledCells = $derived(xpSegments(level.xp, level.xp_next));
 	let streakLabel = $derived(
 		astronaut.streak_days === 0
-			? 'Sin racha'
-			: `${astronaut.streak_days} ${astronaut.streak_days === 1 ? 'día' : 'días'}`
+			? 'No streak'
+			: `${astronaut.streak_days} ${astronaut.streak_days === 1 ? 'day' : 'days'}`
 	);
-	let pendingLabel = $derived(
-		progress.pending === 1 ? '1 pendiente' : `${progress.pending} pendientes`
-	);
+	let pendingLabel = $derived(progress.pending === 1 ? '1 pending' : `${progress.pending} pending`);
 </script>
 
 <button
@@ -47,7 +45,7 @@
 	data-selected={focused}
 	data-astro-id={astronaut.id}
 	aria-current={focused ? 'true' : undefined}
-	aria-label={focused ? `Abrir ficha de ${name}` : `Seleccionar a ${name}`}
+	aria-label={focused ? `Open ${name}'s profile` : `Select ${name}`}
 	onclick={() => onselect(astronaut)}
 	class="poster group relative block aspect-[3/4] w-full shrink-0 overflow-hidden rounded-3xl text-left {focused
 		? 'ring-2 ring-white/80'
@@ -63,7 +61,7 @@
 	<span
 		class="absolute top-[4cqw] left-[4cqw] z-10 rounded-full bg-white/10 px-[2.5cqw] py-[1cqw] font-mono text-[3.2cqw] font-semibold tracking-[0.14em] text-white uppercase ring-1 ring-white/20 backdrop-blur ring-inset"
 	>
-		Nivel {level.level}
+		Level {level.level}
 	</span>
 
 	<span
@@ -133,7 +131,7 @@
 			{/each}
 		</span>
 		<span class="sr-only {detailState}">
-			{numberFormat.format(level.xp)} de {numberFormat.format(level.xp_next)} XP para el siguiente nivel
+			{numberFormat.format(level.xp)} of {numberFormat.format(level.xp_next)} XP to the next level
 		</span>
 	</span>
 </button>

@@ -9,11 +9,11 @@ export type CrewTone = 'indigo' | 'cyan' | 'violet' | 'amber' | 'emerald';
  * so a seeded role can never fall outside the select options.
  */
 export const CREW_ROLES = [
-	'Comandante de vuelo',
-	'Piloto de vuelo',
-	'Médico/a de vuelo',
-	'Ingeniero/a de sistemas',
-	'Especialista de misión'
+	'Flight Commander',
+	'Flight Pilot',
+	'Flight Physician',
+	'Systems Engineer',
+	'Mission Specialist'
 ] as const;
 
 export type CrewRole = (typeof CREW_ROLES)[number];

@@ -129,21 +129,21 @@ export function onboardingTasks(astronautId: number): CrewTask[] {
 	return [
 		{
 			id: base + 1,
-			title: 'Completar perfil de tripulación',
+			title: 'Complete crew profile',
 			kind: 'logistica',
 			done: false,
 			xp: 20
 		},
 		{
 			id: base + 2,
-			title: 'Registrar signos vitales',
+			title: 'Record vital signs',
 			kind: 'salud',
 			done: false,
 			xp: 40
 		},
 		{
 			id: base + 3,
-			title: 'Primer entrenamiento de 20 min',
+			title: 'First 20-minute training',
 			kind: 'entrenamiento',
 			done: false,
 			xp: 30

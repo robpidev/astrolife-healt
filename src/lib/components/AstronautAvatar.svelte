@@ -32,7 +32,7 @@
 {#if astronaut.avatar_url}
 	<img
 		src={astronaut.avatar_url}
-		alt="Retrato de {name}"
+		alt="Portrait of {name}"
 		class="shrink-0 rounded-full object-cover {ringWidth} {ring} {classes}"
 	/>
 {:else}

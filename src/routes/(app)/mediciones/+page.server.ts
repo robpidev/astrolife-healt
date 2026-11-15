@@ -62,7 +62,7 @@ export const actions: Actions = {
 		return {
 			action: 'create',
 			success: true,
-			message: 'Medición guardada'
+			message: 'Measurement saved'
 		} satisfies MeasurementActionData;
 	},
 
@@ -75,7 +75,7 @@ export const actions: Actions = {
 			return fail(400, {
 				action: 'update',
 				values: result.values,
-				error: 'Medición no encontrada'
+				error: 'Measurement not found'
 			} satisfies MeasurementActionData);
 		}
 
@@ -93,7 +93,7 @@ export const actions: Actions = {
 				action: 'update',
 				id,
 				values: result.values,
-				error: 'Medición no encontrada'
+				error: 'Measurement not found'
 			} satisfies MeasurementActionData);
 		}
 
@@ -101,7 +101,7 @@ export const actions: Actions = {
 			action: 'update',
 			id,
 			success: true,
-			message: 'Medición actualizada'
+			message: 'Measurement updated'
 		} satisfies MeasurementActionData;
 	},
 
@@ -112,21 +112,21 @@ export const actions: Actions = {
 		if (id === null) {
 			return fail(400, {
 				action: 'delete',
-				error: 'Medición no encontrada'
+				error: 'Measurement not found'
 			} satisfies MeasurementActionData);
 		}
 
 		if (!deleteMeasurement(id)) {
 			return fail(404, {
 				action: 'delete',
-				error: 'Medición no encontrada'
+				error: 'Measurement not found'
 			} satisfies MeasurementActionData);
 		}
 
 		return {
 			action: 'delete',
 			success: true,
-			message: 'Medición eliminada'
+			message: 'Measurement deleted'
 		} satisfies MeasurementActionData;
 	}
 };

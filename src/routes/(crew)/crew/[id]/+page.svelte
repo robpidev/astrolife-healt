@@ -7,8 +7,6 @@
 </script>
 
 <svelte:head>
-	<title>
-		Perfil del astronauta · Astrolife Health
-	</title>
+	<title>Astronaut profile · Astrolife Health</title>
 </svelte:head>
 <HealthAreaOverview areaId="cardiovascular" {basePath} />

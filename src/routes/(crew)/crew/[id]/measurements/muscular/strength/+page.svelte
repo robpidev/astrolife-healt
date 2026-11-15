@@ -6,13 +6,11 @@
 </script>
 
 <svelte:head>
-	<title>
-		Fuerza · Astrolife
-	</title>
+	<title>Strength · Astrolife</title>
 </svelte:head>
 <div class="space-y-5">
-	<MetricCard title="Fuerza" unit="" />
+	<MetricCard title="Strength" unit="" />
 	<MetricChart />
 	<MetricStatistics />
-	<MetricForm label="Fuerza" unit="" />
+	<MetricForm label="Strength" unit="" />
 </div>

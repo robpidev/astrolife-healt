@@ -6,13 +6,11 @@
 </script>
 
 <svelte:head>
-	<title>
-		Síntomas · Astrolife
-	</title>
+	<title>Symptoms · Astrolife</title>
 </svelte:head>
 <div class="space-y-5">
-	<MetricCard title="Síntomas" unit="" />
+	<MetricCard title="Symptoms" unit="" />
 	<MetricChart />
 	<MetricStatistics />
-	<MetricForm label="Síntomas" unit="" />
+	<MetricForm label="Symptoms" unit="" />
 </div>

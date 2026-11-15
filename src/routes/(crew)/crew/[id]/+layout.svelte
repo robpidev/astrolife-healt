@@ -30,12 +30,10 @@
 	>
 		<div class="mb-7 shrink-0">
 			<p class="mb-2 text-xs font-medium tracking-[0.24em] text-cyan-300/70 uppercase">
-				Centro de salud · Perfil individual
+				Health center · Individual profile
 			</p>
-			<h1 class="text-3xl font-semibold tracking-tight text-slate-50">Perfil del astronauta</h1>
-			<p class="mt-2 text-sm text-slate-400">
-				Información personal y seguimiento de las áreas de salud.
-			</p>
+			<h1 class="text-3xl font-semibold tracking-tight text-slate-50">Astronaut profile</h1>
+			<p class="mt-2 text-sm text-slate-400">Personal information and health area tracking.</p>
 		</div>
 		<div class="shrink-0">
 			<ProfileTabs {basePath} />
@@ -50,7 +48,7 @@
 			</aside>
 			<section
 				class="app-scroll grid min-h-0 items-center gap-3 lg:col-start-2 xl:grid-cols-[minmax(0,1fr)_150px] xl:overflow-y-auto xl:overscroll-contain"
-				aria-label="Explorar áreas de salud"
+				aria-label="Explore health areas"
 			>
 				<div class="hidden xl:block">
 					<AstronautBodyMap />

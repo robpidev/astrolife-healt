@@ -6,13 +6,11 @@
 </script>
 
 <svelte:head>
-	<title>
-		Hidratación · Astrolife
-	</title>
+	<title>Hydration · Astrolife</title>
 </svelte:head>
 <div class="space-y-5">
-	<MetricCard title="Hidratación" unit="L" />
+	<MetricCard title="Hydration" unit="L" />
 	<MetricChart />
 	<MetricStatistics />
-	<MetricForm label="Hidratación" unit="L" />
+	<MetricForm label="Hydration" unit="L" />
 </div>

@@ -1,7 +1,5 @@
-<section class="min-w-0 text-center" aria-label="Mapa corporal ilustrativo">
-	<p class="mb-3 text-xs tracking-[0.2em] text-cyan-200/60 uppercase">
-		Mapa corporal
-	</p>
+<section class="min-w-0 text-center" aria-label="Illustrative body map">
+	<p class="mb-3 text-xs tracking-[0.2em] text-cyan-200/60 uppercase">Body map</p>
 	<svg
 		viewBox="0 0 180 420"
 		class="mx-auto h-80 w-full max-w-44 text-cyan-200 drop-shadow-[0_0_8px_#22d3ee55] sm:h-[390px]"
@@ -58,9 +56,10 @@
 			<circle cx="72" cy="367" r="3" />
 			<circle cx="108" cy="367" r="3" />
 		</g>
-		<path d="M14 112h15M151 112h15M13 212h20M147 212h20M15 309h30M135 309h30" stroke-opacity="0.2" />
+		<path
+			d="M14 112h15M151 112h15M13 212h20M147 212h20M15 309h30M135 309h30"
+			stroke-opacity="0.2"
+		/>
 	</svg>
-	<p class="mt-1 text-xs text-slate-500">
-		Visualización anatómica ilustrativa
-	</p>
+	<p class="mt-1 text-xs text-slate-500">Illustrative anatomical visualization</p>
 </section>

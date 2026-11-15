@@ -10,8 +10,8 @@ export function calculateBmi(massKg: number, heightCm: number): number {
 }
 
 export function bmiCategory(bmi: number): BmiCategory {
-	if (bmi < 18.5) return { label: 'Bajo peso', tone: 'low' };
+	if (bmi < 18.5) return { label: 'Underweight', tone: 'low' };
 	if (bmi < 25) return { label: 'Normal', tone: 'normal' };
-	if (bmi < 30) return { label: 'Sobrepeso', tone: 'high' };
-	return { label: 'Obesidad', tone: 'obese' };
+	if (bmi < 30) return { label: 'Overweight', tone: 'high' };
+	return { label: 'Obese', tone: 'obese' };
 }

@@ -1,8 +1,8 @@
 <script lang="ts">
 	import { untrack } from 'svelte';
 	import { enhance } from '$app/forms';
+	import type { SubmitFunction } from '$app/forms';
 	import { invalidateAll } from '$app/navigation';
-	import type { SubmitFunction } from '@sveltejs/kit';
 	import { browser } from '$app/env';
 	import { CREW_ROLES } from '#lib/interfaces/astronaut.js';
 	import type { Astronaut, CrewTone } from '#lib/interfaces/astronaut.js';
@@ -18,11 +18,11 @@
 
 	const TONES: CrewTone[] = ['indigo', 'cyan', 'violet', 'amber', 'emerald'];
 	const TONE_LABELS: Record<CrewTone, string> = {
-		indigo: 'Índigo',
-		cyan: 'Cian',
-		violet: 'Violeta',
-		amber: 'Ámbar',
-		emerald: 'Esmeralda'
+		indigo: 'Indigo',
+		cyan: 'Cyan',
+		violet: 'Violet',
+		amber: 'Amber',
+		emerald: 'Emerald'
 	};
 
 	// The dialog is mounted only while open, so seeding from the current
@@ -36,7 +36,15 @@
 	let sex = $state<string>(untrack(() => astronaut?.sex ?? 'no_especificado'));
 	let pending = $state(false);
 	let message = $state('');
-	const errorFields = ['first_name', 'last_name', 'nationality', 'sex', 'role', 'tone', 'photo'] as const;
+	const errorFields = [
+		'first_name',
+		'last_name',
+		'nationality',
+		'sex',
+		'role',
+		'tone',
+		'photo'
+	] as const;
 	type ErrorField = (typeof errorFields)[number];
 	let errors = $state<Partial<Record<ErrorField, string>>>({});
 
@@ -58,10 +66,10 @@
 
 	function validatePhoto(file: File): string | null {
 		if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
-			return 'Selecciona una imagen JPG, PNG o WebP.';
+			return 'Select a valid JPG, PNG, or WebP image.';
 		}
-		if (file.size > 2 * 1024 * 1024) return 'La foto no debe superar los 2 MB.';
-		if (file.size === 0) return 'La imagen está vacía. Selecciona otra foto.';
+		if (file.size > 2 * 1024 * 1024) return 'The photo must be at most 2 MB.';
+		if (file.size === 0) return 'The image is empty. Choose another photo.';
 		return null;
 	}
 
@@ -145,7 +153,7 @@
 				message =
 					result.type === 'failure' && typeof result.data?.message === 'string'
 						? result.data.message
-						: 'No se pudo guardar el cambio. Intenta nuevamente.';
+						: 'Could not save the change. Try again.';
 			}
 		};
 	};
@@ -165,19 +173,19 @@
 		>
 			<div class="min-w-0">
 				<p class="text-[11px] font-semibold tracking-[0.14em] text-teal-300 uppercase">
-					{mode === 'create' ? 'Nuevo tripulante' : 'Editar perfil'}
+					{mode === 'create' ? 'New crew member' : 'Edit profile'}
 				</p>
 				<h2
 					id="astronaut-dialog-title"
 					class="mt-1 text-xl font-semibold tracking-tight text-white"
 				>
-					{mode === 'create' ? 'Agregar astronauta' : 'Editar astronauta'}
+					{mode === 'create' ? 'Add astronaut' : 'Edit astronaut'}
 				</h2>
 			</div>
 			<button
 				type="button"
 				class="grid size-11 shrink-0 place-items-center rounded-full border border-white/10 text-slate-300 transition hover:bg-white/10 hover:text-white focus-visible:ring-2 focus-visible:ring-teal-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950 focus-visible:outline-none"
-				aria-label="Cerrar"
+				aria-label="Close"
 				onclick={requestClose}
 			>
 				<svg
@@ -207,12 +215,12 @@
 			<fieldset disabled={pending} class="contents">
 				<div class="mb-5 rounded-2xl border border-white/10 bg-white/5 p-4">
 					<label for="astronaut-photo" class="block text-sm font-medium text-slate-200">
-						Foto del tripulante <span class="font-normal text-slate-400">(opcional)</span>
+						Photo of the crew member <span class="font-normal text-slate-400">(optional)</span>
 					</label>
 					{#if previewUrl}
 						<img
 							src={previewUrl}
-							alt="Vista previa de la foto del tripulante"
+							alt="Preview of the crew member"
 							class="mt-3 size-24 rounded-2xl object-cover ring-1 ring-white/10"
 						/>
 					{/if}
@@ -223,12 +231,16 @@
 						accept="image/jpeg,image/png,image/webp"
 						onchange={handlePhotoChange}
 						aria-invalid={errors.photo ? 'true' : undefined}
-						aria-describedby={errors.photo ? 'astronaut-photo-help astronaut-photo-error' : 'astronaut-photo-help'}
+						aria-describedby={errors.photo
+							? 'astronaut-photo-help astronaut-photo-error'
+							: 'astronaut-photo-help'}
 						class="mt-3 block min-h-11 w-full rounded-xl text-sm text-slate-300 file:mr-3 file:min-h-11 file:rounded-xl file:border-0 file:bg-teal-400/15 file:px-4 file:font-semibold file:text-teal-300 focus-visible:ring-2 focus-visible:ring-teal-400 focus-visible:outline-none"
 					/>
 					<p id="astronaut-photo-help" class="mt-2 text-xs text-slate-400">
-						JPG, PNG o WebP, hasta 2 MB.
-						{mode === 'edit' ? 'Si no eliges una nueva foto, se conserva la actual.' : 'Si no eliges una foto, se mostrarán las iniciales.'}
+						JPG, PNG, or WebP, up to 2 MB.
+						{mode === 'edit'
+							? 'If you do not choose a new photo, the current one is kept.'
+							: 'If you do not choose a photo, initials will be shown.'}
 					</p>
 					{#if errors.photo}
 						<p id="astronaut-photo-error" role="alert" class="mt-1 text-xs text-rose-300">
@@ -239,7 +251,7 @@
 				<div class="grid gap-4 sm:grid-cols-2">
 					<div>
 						<label for="astronaut-first-name" class="block text-sm font-medium text-slate-200">
-							Nombre
+							First name
 						</label>
 						<input
 							id="astronaut-first-name"
@@ -262,7 +274,7 @@
 
 					<div>
 						<label for="astronaut-last-name" class="block text-sm font-medium text-slate-200">
-							Apellido
+							Last name
 						</label>
 						<input
 							id="astronaut-last-name"
@@ -285,7 +297,7 @@
 				</div>
 
 				<div class="mt-4">
-					<label for="astronaut-role" class="block text-sm font-medium text-slate-200">Rol</label>
+					<label for="astronaut-role" class="block text-sm font-medium text-slate-200">Role</label>
 					<select
 						id="astronaut-role"
 						name="role"
@@ -295,7 +307,7 @@
 						aria-describedby={errors.role ? 'astronaut-role-error' : undefined}
 						class="mt-1 block min-h-11 w-full rounded-xl border border-white/10 bg-slate-900 px-3 text-sm text-white focus:border-teal-400 focus-visible:ring-2 focus-visible:ring-teal-400 focus-visible:outline-none"
 					>
-						<option value="" disabled>Selecciona un rol</option>
+						<option value="" disabled>Select a role</option>
 						{#each CREW_ROLES as option (option)}
 							<option value={option}>{option}</option>
 						{/each}
@@ -308,7 +320,7 @@
 				<div class="mt-4 grid gap-4 sm:grid-cols-2">
 					<div>
 						<label for="astronaut-nationality" class="block text-sm font-medium text-slate-200">
-							Nacionalidad
+							Nationality
 						</label>
 						<input
 							id="astronaut-nationality"
@@ -327,7 +339,7 @@
 						{/if}
 					</div>
 					<div>
-						<label for="astronaut-sex" class="block text-sm font-medium text-slate-200">Sexo</label>
+						<label for="astronaut-sex" class="block text-sm font-medium text-slate-200">Sex</label>
 						<select
 							id="astronaut-sex"
 							name="sex"
@@ -336,10 +348,10 @@
 							aria-describedby={errors.sex ? 'astronaut-sex-error' : undefined}
 							class="mt-1 block min-h-11 w-full rounded-xl border border-white/10 bg-slate-900 px-3 text-sm text-white focus-visible:ring-2 focus-visible:ring-teal-400"
 						>
-							<option value="femenino">Femenino</option>
-							<option value="masculino">Masculino</option>
-							<option value="intersexual">Intersexual</option>
-							<option value="no_especificado">No especificado</option>
+							<option value="femenino">Female</option>
+							<option value="masculino">Male</option>
+							<option value="intersexual">Intersex</option>
+							<option value="no_especificado">Not specified</option>
 						</select>
 						{#if errors.sex}
 							<p id="astronaut-sex-error" class="mt-1 text-xs text-rose-300">{errors.sex}</p>
@@ -348,8 +360,8 @@
 				</div>
 
 				<fieldset class="mt-5">
-					<legend class="text-sm font-medium text-slate-200">Tono</legend>
-					<div role="radiogroup" aria-label="Tono del perfil" class="mt-2 flex flex-wrap gap-2">
+					<legend class="text-sm font-medium text-slate-200">Tone</legend>
+					<div role="radiogroup" aria-label="Profile tone" class="mt-2 flex flex-wrap gap-2">
 						{#each TONES as option (option)}
 							<button
 								type="button"
@@ -387,10 +399,12 @@
 				</fieldset>
 
 				<p class="mt-5 rounded-xl bg-white/5 px-3 py-2 text-xs text-slate-400">
-					Los cambios se guardan en la base de datos local.
+					Changes are saved to the local database.
 				</p>
 
-				<div class="mt-5 flex flex-col-reverse gap-2 sm:flex-row sm:items-center sm:justify-between">
+				<div
+					class="mt-5 flex flex-col-reverse gap-2 sm:flex-row sm:items-center sm:justify-between"
+				>
 					<div>
 						{#if mode === 'edit'}
 							<button
@@ -399,10 +413,10 @@
 								formaction="?/deleteAstronaut"
 								formnovalidate
 								onclick={(event) => {
-									if (!confirm('¿Eliminar este tripulante?')) event.preventDefault();
+									if (!confirm('Delete this crew member?')) event.preventDefault();
 								}}
 							>
-								Eliminar tripulante
+								Delete crew member
 							</button>
 						{/if}
 					</div>
@@ -413,13 +427,13 @@
 							class="inline-flex min-h-11 items-center justify-center rounded-xl border border-white/10 px-4 text-sm font-semibold text-slate-100 transition hover:bg-white/10 focus-visible:ring-2 focus-visible:ring-teal-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950 focus-visible:outline-none"
 							onclick={requestClose}
 						>
-							Cancelar
+							Cancel
 						</button>
 						<button
 							type="submit"
 							class="inline-flex min-h-11 items-center justify-center rounded-xl bg-teal-500 px-4 text-sm font-semibold text-slate-950 transition hover:bg-teal-400 focus-visible:ring-2 focus-visible:ring-teal-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950 focus-visible:outline-none"
 						>
-							{pending ? 'Guardando…' : mode === 'create' ? 'Crear tripulante' : 'Guardar cambios'}
+							{pending ? 'Saving…' : mode === 'create' ? 'Create crew member' : 'Save changes'}
 						</button>
 					</div>
 				</div>

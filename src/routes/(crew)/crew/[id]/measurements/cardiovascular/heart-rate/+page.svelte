@@ -6,13 +6,11 @@
 </script>
 
 <svelte:head>
-	<title>
-		Frecuencia cardíaca · Astrolife
-	</title>
+	<title>Heart rate · Astrolife</title>
 </svelte:head>
 <div class="space-y-5">
-	<MetricCard title="Frecuencia cardíaca" unit="lpm" />
+	<MetricCard title="Heart rate" unit="bpm" />
 	<MetricChart />
 	<MetricStatistics />
-	<MetricForm label="Frecuencia cardíaca" unit="lpm" />
+	<MetricForm label="Heart rate" unit="bpm" />
 </div>

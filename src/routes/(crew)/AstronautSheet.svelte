@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
+	import type { SubmitFunction } from '$app/forms';
 	import { invalidateAll } from '$app/navigation';
-	import type { SubmitFunction } from '@sveltejs/kit';
 	import { browser } from '$app/env';
 	import { resolve } from '$app/paths';
 	import type { Astronaut } from '#lib/interfaces/astronaut.js';
@@ -24,7 +24,7 @@
 
 	let { astronaut, onclose, onedit }: Props = $props();
 
-	const numberFormat = new Intl.NumberFormat('es', { useGrouping: 'always' });
+	const numberFormat = new Intl.NumberFormat('en', { useGrouping: 'always' });
 	const XP_CELLS = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
 
 	let dialogEl = $state<HTMLDialogElement | null>(null);
@@ -72,7 +72,7 @@
 				message =
 					result.type === 'failure' && typeof result.data?.message === 'string'
 						? result.data.message
-						: 'No se pudo actualizar la tarea. Intenta nuevamente.';
+						: 'Could not update the task. Try again.';
 			}
 		};
 	};
@@ -94,7 +94,7 @@
 		{@const preview = pendingCrewTasks(astronaut.tasks)}
 		{@const filledCells = xpSegments(level.xp, level.xp_next)}
 		{@const name = astronautName(astronaut)}
-		{@const completionLabel = `${progress.done} de ${progress.total} ${progress.total === 1 ? 'completada' : 'completadas'}`}
+		{@const completionLabel = `${progress.done} of ${progress.total} completed`}
 
 		<div class="flex max-h-[88dvh] flex-col sm:h-full sm:max-h-dvh">
 			<header
@@ -104,7 +104,7 @@
 
 				<div class="min-w-0 flex-1">
 					<p class="text-[11px] font-semibold tracking-[0.14em] text-teal-300 uppercase">
-						Ficha de tripulación
+						Crew profile
 					</p>
 					<h2
 						id="crew-sheet-title"
@@ -114,7 +114,10 @@
 					</h2>
 					<p class="truncate text-sm text-slate-400">{astronaut.role}</p>
 					<p class="mt-1 text-xs text-slate-400">
-						{astronaut.nationality ?? 'Nacionalidad sin registrar'} · {astronaut.sex === 'no_especificado' || !astronaut.sex ? 'Sexo no especificado' : astronaut.sex}
+						{astronaut.nationality ?? 'Nationality not recorded'} · {astronaut.sex ===
+							'no_especificado' || !astronaut.sex
+							? 'Sex not specified'
+							: astronaut.sex}
 					</p>
 					<span
 						class="mt-2 inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium ring-1 ring-inset {status.pill}"
@@ -127,7 +130,7 @@
 				<button
 					type="button"
 					class="grid size-11 shrink-0 place-items-center rounded-full border border-white/10 text-slate-300 transition hover:bg-white/10 hover:text-white focus-visible:ring-2 focus-visible:ring-teal-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950 focus-visible:outline-none"
-					aria-label="Cerrar ficha"
+					aria-label="Close profile"
 					onclick={requestClose}
 				>
 					<svg
@@ -149,7 +152,7 @@
 				<dl class="grid grid-cols-2 gap-3">
 					<div class="rounded-xl border border-white/10 bg-white/5 p-3">
 						<dt class="text-[11px] font-semibold tracking-[0.12em] text-slate-400 uppercase">
-							Nivel
+							Level
 						</dt>
 						<dd class="mt-1 font-mono text-xl font-semibold text-white tabular-nums">
 							{level.level}
@@ -157,17 +160,17 @@
 					</div>
 					<div class="rounded-xl border border-white/10 bg-white/5 p-3">
 						<dt class="text-[11px] font-semibold tracking-[0.12em] text-slate-400 uppercase">
-							Racha
+							Streak
 						</dt>
 						<dd class="mt-1 font-mono text-xl font-semibold text-white tabular-nums">
 							{astronaut.streak_days}<span class="text-sm font-medium text-slate-400"
-								>&nbsp;{astronaut.streak_days === 1 ? 'día' : 'días'}</span
+								>&nbsp;{astronaut.streak_days === 1 ? 'day' : 'days'}</span
 							>
 						</dd>
 					</div>
 					<div class="rounded-xl border border-white/10 bg-white/5 p-3">
 						<dt class="text-[11px] font-semibold tracking-[0.12em] text-slate-400 uppercase">
-							Misiones
+							Missions
 						</dt>
 						<dd class="mt-1 font-mono text-xl font-semibold text-white tabular-nums">
 							{astronaut.missions_completed}
@@ -175,7 +178,7 @@
 					</div>
 					<div class="rounded-xl border border-white/10 bg-white/5 p-3">
 						<dt class="text-[11px] font-semibold tracking-[0.12em] text-slate-400 uppercase">
-							Tareas
+							Tasks
 						</dt>
 						<dd class="mt-1 font-mono text-xl font-semibold text-white tabular-nums">
 							{progress.done}/{progress.total}
@@ -188,7 +191,7 @@
 						id="crew-sheet-badges"
 						class="text-xs font-semibold tracking-[0.14em] text-slate-400 uppercase"
 					>
-						Insignias
+						Badges
 					</h3>
 					{#if astronaut.badges.length > 0}
 						<ul class="mt-2 flex flex-wrap gap-2">
@@ -201,7 +204,7 @@
 							{/each}
 						</ul>
 					{:else}
-						<p class="mt-2 text-sm text-slate-400">Sin insignias todavía.</p>
+						<p class="mt-2 text-sm text-slate-400">No badges yet.</p>
 					{/if}
 				</section>
 
@@ -210,14 +213,14 @@
 						<p role="alert" class="mb-3 text-sm text-rose-300">{message}</p>
 					{/if}
 					{#if pending}
-						<p role="status" class="mb-3 text-sm text-teal-300">Guardando tarea…</p>
+						<p role="status" class="mb-3 text-sm text-teal-300">Saving task…</p>
 					{/if}
 					<div class="flex items-center justify-between gap-3">
 						<h3
 							id="crew-sheet-tasks"
 							class="text-xs font-semibold tracking-[0.14em] text-slate-400 uppercase"
 						>
-							Tareas del día
+							Tasks of the day
 						</h3>
 						<span class="text-xs font-medium text-slate-400">
 							{completionLabel}
@@ -282,7 +285,7 @@
 													? 'text-slate-500'
 													: 'text-teal-300'}"
 											>
-												{task.done ? 'Completada' : `+${task.xp} XP`}
+												{task.done ? 'Completed' : `+${task.xp} XP`}
 											</span>
 										</button>
 									</form>
@@ -291,7 +294,7 @@
 						</ul>
 					{:else}
 						<p class="mt-3 rounded-xl bg-white/5 px-3 py-2 text-sm text-slate-400">
-							Sin tareas programadas para hoy.
+							No tasks scheduled for today.
 						</p>
 					{/if}
 
@@ -311,7 +314,7 @@
 							>
 								<path d="m5 12.5 4.5 4.5L19 7" />
 							</svg>
-							Todo completado por hoy
+							All done for today
 						</p>
 					{/if}
 				</section>
@@ -322,7 +325,7 @@
 							id="crew-sheet-xp"
 							class="text-xs font-semibold tracking-[0.14em] text-slate-400 uppercase"
 						>
-							Progreso de nivel
+							Level progress
 						</h3>
 						<span class="font-mono text-xs font-medium text-slate-400 tabular-nums">
 							{numberFormat.format(level.xp)} / {numberFormat.format(level.xp_next)} XP
@@ -338,7 +341,7 @@
 				</section>
 
 				<p class="mt-6 rounded-xl bg-white/5 px-3 py-2 text-xs text-slate-400">
-					Las tareas y el progreso se guardan en la base de datos local.
+					Tasks and progress are saved to the local database.
 				</p>
 
 				<div class="mt-3 grid gap-2">
@@ -347,14 +350,14 @@
 						class="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl border border-white/10 px-4 text-sm font-semibold text-slate-100 transition hover:bg-white/10 focus-visible:ring-2 focus-visible:ring-teal-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950 focus-visible:outline-none"
 						onclick={onedit}
 					>
-						Editar perfil
+						Edit profile
 					</button>
 
 					<a
 						href={resolve('/(app)/mediciones')}
 						class="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl bg-teal-500 px-4 text-sm font-semibold text-slate-950 transition hover:bg-teal-400 focus-visible:ring-2 focus-visible:ring-teal-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950 focus-visible:outline-none"
 					>
-						Ver historial de salud
+						View health history
 						<svg
 							viewBox="0 0 24 24"
 							fill="none"

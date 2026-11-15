@@ -20,7 +20,7 @@
 </script>
 
 <nav
-	aria-label="Áreas de salud"
+	aria-label="Health areas"
 	class="app-scroll flex gap-2 overflow-x-auto pb-1 xl:flex-col xl:gap-3 xl:overflow-visible xl:pb-0"
 >
 	{#each links as link (link.id)}

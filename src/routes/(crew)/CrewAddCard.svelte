@@ -21,5 +21,5 @@
 			: 'size-12 text-2xl'}"
 		aria-hidden="true">+</span
 	>
-	<span class="{large ? 'text-base' : 'text-sm'} font-medium">Agregar astronauta</span>
+	<span class="{large ? 'text-base' : 'text-sm'} font-medium">Add astronaut</span>
 </button>

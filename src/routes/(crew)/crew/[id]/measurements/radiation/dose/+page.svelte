@@ -6,13 +6,11 @@
 </script>
 
 <svelte:head>
-	<title>
-		Dosis · Astrolife
-	</title>
+	<title>Dose · Astrolife</title>
 </svelte:head>
 <div class="space-y-5">
-	<MetricCard title="Dosis" unit="mSv" />
+	<MetricCard title="Dose" unit="mSv" />
 	<MetricChart />
 	<MetricStatistics />
-	<MetricForm label="Dosis" unit="mSv" />
+	<MetricForm label="Dose" unit="mSv" />
 </div>

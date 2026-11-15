@@ -1,5 +1,5 @@
 <script lang="ts">
-	let { title = 'Evolución de las mediciones' }: { title?: string } = $props();
+	let { title = 'Measurement trend' }: { title?: string } = $props();
 </script>
 
 <section class="rounded-xl border border-cyan-200/10 bg-[#081322] p-4">
@@ -8,7 +8,7 @@
 			{title}
 		</h3>
 		<span class="rounded-md border border-white/10 px-2 py-1 text-xs text-slate-500">
-			Sin registros
+			No records
 		</span>
 	</div>
 	<div class="relative mt-5">
@@ -23,15 +23,11 @@
 			/>
 		</svg>
 		<div class="absolute inset-0 flex flex-col items-center justify-center gap-2">
-			<span class="text-xs text-slate-400">
-				Sin datos para mostrar
-			</span>
+			<span class="text-xs text-slate-400"> No data to show </span>
 			<span class="text-xs text-slate-600">
-				La evolución aparecerá con las primeras mediciones.
+				The trend will appear with the first measurements.
 			</span>
 		</div>
 	</div>
-	<p class="text-right text-xs text-slate-600">
-		Fecha de medición
-	</p>
+	<p class="text-right text-xs text-slate-600">Measurement date</p>
 </section>

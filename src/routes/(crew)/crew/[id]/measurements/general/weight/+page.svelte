@@ -6,13 +6,11 @@
 </script>
 
 <svelte:head>
-	<title>
-		Peso · Astrolife
-	</title>
+	<title>Weight · Astrolife</title>
 </svelte:head>
 <div class="space-y-5">
-	<MetricCard title="Peso" unit="kg" />
+	<MetricCard title="Weight" unit="kg" />
 	<MetricChart />
 	<MetricStatistics />
-	<MetricForm label="Peso" unit="kg" />
+	<MetricForm label="Weight" unit="kg" />
 </div>

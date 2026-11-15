@@ -109,7 +109,7 @@
 
 	<div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
 		<div>
-			<label for="{uid}-measured_at" class={labelClass}>Fecha</label>
+			<label for="{uid}-measured_at" class={labelClass}>Date</label>
 			<input
 				id="{uid}-measured_at"
 				name="measured_at"
@@ -129,7 +129,7 @@
 		</div>
 
 		<div>
-			<label for="{uid}-mass_kg" class={labelClass}>Masa</label>
+			<label for="{uid}-mass_kg" class={labelClass}>Mass</label>
 			<div class="relative">
 				<input
 					id="{uid}-mass_kg"
@@ -159,7 +159,7 @@
 		</div>
 
 		<div>
-			<label for="{uid}-height_cm" class={labelClass}>Talla</label>
+			<label for="{uid}-height_cm" class={labelClass}>Height</label>
 			<div class="relative">
 				<input
 					id="{uid}-height_cm"
@@ -190,7 +190,7 @@
 
 		<div>
 			<label for="{uid}-systolic" class={labelClass}>
-				Presión sistólica <span class={optionalClass}>opcional</span>
+				Systolic pressure <span class={optionalClass}>optional</span>
 			</label>
 			<div class="relative">
 				<input
@@ -221,7 +221,7 @@
 
 		<div>
 			<label for="{uid}-diastolic" class={labelClass}>
-				Presión diastólica <span class={optionalClass}>opcional</span>
+				Diastolic pressure <span class={optionalClass}>optional</span>
 			</label>
 			<div class="relative">
 				<input
@@ -252,7 +252,7 @@
 
 		<div>
 			<label for="{uid}-pulse" class={labelClass}>
-				Pulso <span class={optionalClass}>opcional</span>
+				Pulse <span class={optionalClass}>optional</span>
 			</label>
 			<div class="relative">
 				<input
@@ -271,7 +271,7 @@
 				/>
 				<span
 					class="pointer-events-none absolute inset-y-0 right-3 flex items-center text-sm text-slate-500"
-					aria-hidden="true">lpm</span
+					aria-hidden="true">bpm</span
 				>
 			</div>
 			{#if errors.pulse}
@@ -283,20 +283,20 @@
 
 		<div class="sm:col-span-2 lg:col-span-3">
 			<label for="{uid}-notes" class={labelClass}>
-				Notas <span class={optionalClass}>opcional</span>
+				Notes <span class={optionalClass}>optional</span>
 			</label>
 			<textarea
 				id="{uid}-notes"
 				name="notes"
 				rows="3"
 				maxlength="500"
-				placeholder="Sensaciones, contexto o cambios en la rutina"
+				placeholder="Feelings, context, or routine changes"
 				bind:value={values.notes}
 				aria-invalid={errors.notes ? 'true' : undefined}
 				aria-describedby="{uid}-notes-help{errors.notes ? ` ${uid}-notes-error` : ''}"
 				class="{inputClass} resize-y"></textarea>
 			<div class="mt-1.5 flex items-center justify-between gap-3">
-				<p id="{uid}-notes-help" class="text-xs text-slate-500">Máximo 500 caracteres</p>
+				<p id="{uid}-notes-help" class="text-xs text-slate-500">Maximum 500 characters</p>
 				<p class="text-xs text-slate-500 tabular-nums" aria-hidden="true">
 					{values.notes.length}/500
 				</p>
@@ -316,7 +316,7 @@
 				onclick={onCancel}
 				class="inline-flex items-center justify-center rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50 focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 focus-visible:outline-none"
 			>
-				Cancelar
+				Cancel
 			</button>
 		{/if}
 		<button
@@ -338,7 +338,7 @@
 					<path d="M12 3a9 9 0 1 0 9 9" />
 				</svg>
 			{/if}
-			{submitting ? 'Guardando…' : isEditing ? 'Guardar cambios' : 'Guardar medición'}
+			{submitting ? 'Saving…' : isEditing ? 'Save changes' : 'Save measurement'}
 		</button>
 	</div>
 </form>

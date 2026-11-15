@@ -6,13 +6,11 @@
 </script>
 
 <svelte:head>
-	<title>
-		Ejercicio · Astrolife
-	</title>
+	<title>Exercise · Astrolife</title>
 </svelte:head>
 <div class="space-y-5">
-	<MetricCard title="Ejercicio" unit="min" />
+	<MetricCard title="Exercise" unit="min" />
 	<MetricChart />
 	<MetricStatistics />
-	<MetricForm label="Ejercicio" unit="min" />
+	<MetricForm label="Exercise" unit="min" />
 </div>

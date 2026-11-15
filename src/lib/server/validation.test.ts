@@ -69,22 +69,22 @@ describe('parseMeasurementForm', () => {
 		const result = parseMeasurementForm(makeForm({ mass_kg: '800', height_cm: '12' }));
 
 		expect(result.data).toBeNull();
-		expect(result.errors.mass_kg).toContain('1 y 500');
-		expect(result.errors.height_cm).toContain('30 y 300');
+		expect(result.errors.mass_kg).toContain('1 and 500');
+		expect(result.errors.height_cm).toContain('30 and 300');
 	});
 
 	it('rejects future dates', () => {
 		const result = parseMeasurementForm(makeForm({ measured_at: tomorrow() }));
 
 		expect(result.data).toBeNull();
-		expect(result.errors.measured_at).toContain('futura');
+		expect(result.errors.measured_at).toContain('future');
 	});
 
 	it('rejects invalid calendar dates', () => {
 		const result = parseMeasurementForm(makeForm({ measured_at: '2024-02-31' }));
 
 		expect(result.data).toBeNull();
-		expect(result.errors.measured_at).toContain('válida');
+		expect(result.errors.measured_at).toContain('valid');
 	});
 
 	it('requires systolic and diastolic together', () => {
@@ -99,7 +99,7 @@ describe('parseMeasurementForm', () => {
 		const result = parseMeasurementForm(makeForm({ systolic: '80', diastolic: '120' }));
 
 		expect(result.data).toBeNull();
-		expect(result.errors.systolic).toContain('mayor');
+		expect(result.errors.systolic).toContain('greater');
 	});
 
 	it('accepts complete pressure and pulse values', () => {
@@ -124,7 +124,7 @@ describe('parseMeasurementForm', () => {
 		const result = parseMeasurementForm(makeForm({ pulse: '300' }));
 
 		expect(result.data).toBeNull();
-		expect(result.errors.pulse).toContain('20 y 250');
+		expect(result.errors.pulse).toContain('20 and 250');
 	});
 
 	it('accepts an empty notes field as null', () => {

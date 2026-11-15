@@ -59,7 +59,7 @@
 		if (!astronaut) return;
 
 		selectedId = astronaut.id;
-		announcement = `Seleccionado: ${astronautName(astronaut)}`;
+		announcement = `Selected: ${astronautName(astronaut)}`;
 	}
 
 	function moveSelection(delta: number): void {
@@ -71,7 +71,7 @@
 		if (!astronaut) return;
 
 		selectedId = astronaut.id;
-		announcement = `Seleccionado: ${astronautName(astronaut)}`;
+		announcement = `Selected: ${astronautName(astronaut)}`;
 
 		// Roving focus: Enter after arrowing must act on the new poster, not on
 		// the one that still owns DOM focus. The rail watches `focusId`.
@@ -90,13 +90,13 @@
 		}
 
 		selectedId = astronaut.id;
-		announcement = `Seleccionado: ${astronautName(astronaut)}`;
+		announcement = `Selected: ${astronautName(astronaut)}`;
 	}
 
 	function openSheet(astronaut: Astronaut): void {
 		selectedId = astronaut.id;
 		sheetId = astronaut.id;
-		announcement = `Ficha abierta: ${astronautName(astronaut)}`;
+		announcement = `Profile opened: ${astronautName(astronaut)}`;
 	}
 
 	function openSelected(): void {
@@ -128,7 +128,7 @@
 	function resetDemo(): void {
 		settings = { ...DEFAULT_CREW_SETTINGS };
 		settingsOpen = false;
-		announcement = 'Preferencias restablecidas.';
+		announcement = 'Preferences reset.';
 	}
 
 	$effect(() => {
@@ -183,10 +183,10 @@
 </script>
 
 <svelte:head>
-	<title>Tripulación · Astrolife · Centro de control</title>
+	<title>Crew · Astrolife · Control center</title>
 	<meta
 		name="description"
-		content="Escenario de tripulación: selecciona un astronauta para revisar su nivel, su racha y sus tareas del día."
+		content="Crew scenario: select an astronaut to review their level, streak, and tasks of the day."
 	/>
 </svelte:head>
 
@@ -207,7 +207,7 @@
 		aria-hidden="true"
 	></div>
 
-	<h1 class="sr-only">Tripulación</h1>
+	<h1 class="sr-only">Crew</h1>
 	<p class="sr-only" aria-live="polite">{announcement}</p>
 
 	<CrewHeader

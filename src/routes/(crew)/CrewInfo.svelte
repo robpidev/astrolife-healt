@@ -20,7 +20,7 @@
 
 	let { astronaut, reducedMotion, largeText, highContrast, onopen, onedit }: Props = $props();
 
-	const numberFormat = new Intl.NumberFormat('es', { useGrouping: 'always' });
+	const numberFormat = new Intl.NumberFormat('en', { useGrouping: 'always' });
 	const XP_CELLS = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
 
 	let name = $derived(astronautName(astronaut));
@@ -55,7 +55,7 @@
 				</h2>
 				<p class="mt-1 flex flex-wrap items-center gap-2 text-sm {muted}">
 					<span>{astronaut.role}</span>
-					<span>· {astronaut.nationality ?? "Nacionalidad sin registrar"}</span>
+					<span>· {astronaut.nationality ?? 'Nationality not recorded'}</span>
 					<span
 						class="inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-medium ring-1 ring-inset {status.pill}"
 					>
@@ -71,14 +71,14 @@
 					class="inline-flex min-h-11 items-center justify-center rounded-xl bg-teal-500 px-4 text-sm font-semibold text-slate-950 transition hover:bg-teal-400 focus-visible:ring-2 focus-visible:ring-teal-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950 focus-visible:outline-none"
 					onclick={onopen}
 				>
-					Abrir ficha
+					Open profile
 				</button>
 				<button
 					type="button"
 					class="inline-flex min-h-11 items-center justify-center rounded-xl border px-4 text-sm font-semibold text-slate-100 transition hover:bg-white/10 focus-visible:ring-2 focus-visible:ring-teal-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950 focus-visible:outline-none {border}"
 					onclick={onedit}
 				>
-					Editar perfil
+					Edit profile
 				</button>
 			</div>
 		</div>
@@ -86,7 +86,7 @@
 		<div class="mt-5">
 			<div class="flex flex-wrap items-baseline justify-between gap-2">
 				<span class="text-xs font-semibold tracking-[0.14em] uppercase {muted}">
-					Nivel {level.level}
+					Level {level.level}
 				</span>
 				<span class="font-mono text-xs font-medium tabular-nums {muted}">
 					{numberFormat.format(level.xp)} / {numberFormat.format(level.xp_next)} XP
@@ -105,29 +105,29 @@
 			<span
 				class="inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-medium tabular-nums {chip}"
 			>
-				Racha: {astronaut.streak_days}
-				{astronaut.streak_days === 1 ? 'día' : 'días'}
+				Streak: {astronaut.streak_days}
+				{astronaut.streak_days === 1 ? 'day' : 'days'}
 			</span>
 			<span
 				class="inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-medium tabular-nums {chip}"
 			>
-				Tareas pendientes: {progress.pending}
+				Pending tasks: {progress.pending}
 			</span>
 			<span
 				class="inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-medium tabular-nums {chip}"
 			>
-				Misiones: {astronaut.missions_completed}
+				Missions: {astronaut.missions_completed}
 			</span>
 		</div>
 
 		{#if nextTask}
 			<p class="mt-4 text-sm {muted}">
-				Próxima:
+				Next:
 				<span class="font-medium text-slate-100">{nextTask.title}</span>
 				<span class="font-mono tabular-nums">(+{nextTask.xp} XP)</span>
 			</p>
 		{:else}
-			<p class="mt-4 text-sm {muted}">Todo completado por hoy.</p>
+			<p class="mt-4 text-sm {muted}">All done for today.</p>
 		{/if}
 	</div>
 </section>

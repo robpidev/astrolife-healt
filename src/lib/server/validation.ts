@@ -71,25 +71,25 @@ export function parseMeasurementForm(form: FormData): {
 	const errors: MeasurementErrors = {};
 
 	if (!values.measured_at) {
-		errors.measured_at = 'La fecha es obligatoria';
+		errors.measured_at = 'Date is required';
 	} else if (!isValidIsoDate(values.measured_at)) {
-		errors.measured_at = 'La fecha no es válida';
+		errors.measured_at = 'Date is not valid';
 	} else if (values.measured_at > localToday()) {
-		errors.measured_at = 'La fecha no puede ser futura';
+		errors.measured_at = 'Date cannot be in the future';
 	}
 
 	const mass = parseDecimal(values.mass_kg);
 	if (mass === null) {
-		errors.mass_kg = 'Introduce la masa en kg';
+		errors.mass_kg = 'Enter mass in kg';
 	} else if (mass < 1 || mass > 500) {
-		errors.mass_kg = 'La masa debe estar entre 1 y 500 kg';
+		errors.mass_kg = 'Mass must be between 1 and 500 kg';
 	}
 
 	const height = parseDecimal(values.height_cm);
 	if (height === null) {
-		errors.height_cm = 'Introduce la talla en cm';
+		errors.height_cm = 'Enter height in cm';
 	} else if (height < 30 || height > 300) {
-		errors.height_cm = 'La talla debe estar entre 30 y 300 cm';
+		errors.height_cm = 'Height must be between 30 and 300 cm';
 	}
 
 	const hasSystolic = values.systolic !== '';
@@ -98,27 +98,27 @@ export function parseMeasurementForm(form: FormData): {
 	const diastolic = hasDiastolic ? parseInteger(values.diastolic) : null;
 
 	if (hasSystolic !== hasDiastolic) {
-		errors.systolic = 'Indica sistólica y diastólica juntas';
-		errors.diastolic = 'Indica sistólica y diastólica juntas';
+		errors.systolic = 'Enter systolic and diastolic together';
+		errors.diastolic = 'Enter systolic and diastolic together';
 	} else {
 		if (hasSystolic && (systolic === null || systolic < 40 || systolic > 300)) {
-			errors.systolic = 'La sistólica debe estar entre 40 y 300 mmHg';
+			errors.systolic = 'Systolic must be between 40 and 300 mmHg';
 		}
 		if (hasDiastolic && (diastolic === null || diastolic < 20 || diastolic > 200)) {
-			errors.diastolic = 'La diastólica debe estar entre 20 y 200 mmHg';
+			errors.diastolic = 'Diastolic must be between 20 and 200 mmHg';
 		}
 		if (systolic !== null && diastolic !== null && systolic <= diastolic) {
-			errors.systolic = 'La sistólica debe ser mayor que la diastólica';
+			errors.systolic = 'Systolic must be greater than diastolic';
 		}
 	}
 
 	const pulse = values.pulse === '' ? null : parseInteger(values.pulse);
 	if (values.pulse !== '' && (pulse === null || pulse < 20 || pulse > 250)) {
-		errors.pulse = 'El pulso debe estar entre 20 y 250 lpm';
+		errors.pulse = 'Pulse must be between 20 and 250 bpm';
 	}
 
 	if (values.notes.length > MAX_NOTES_LENGTH) {
-		errors.notes = `Máximo ${MAX_NOTES_LENGTH} caracteres`;
+		errors.notes = `Maximum ${MAX_NOTES_LENGTH} characters`;
 	}
 
 	if (Object.keys(errors).length > 0 || mass === null || height === null) {

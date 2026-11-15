@@ -14,14 +14,25 @@ describe('health schema migration', () => {
 		initializeSchema(db);
 		expect(db.prepare('SELECT mass_kg FROM personal_measurements').get()?.mass_kg).toBe(70);
 		expect(db.prepare('SELECT count(*) AS total FROM metric_definitions').get()?.total).toBe(16);
-		expect(db.prepare('PRAGMA table_info(measurements)').all().some((column) => column.name === 'astronaut_id')).toBe(true);
+		expect(
+			db
+				.prepare('PRAGMA table_info(measurements)')
+				.all()
+				.some((column) => column.name === 'astronaut_id')
+		).toBe(true);
 		db.close();
 	});
 	it('adds nullable demographics to existing astronauts', () => {
 		const db = new DatabaseSync(':memory:');
-		db.exec("CREATE TABLE astronauts(id TEXT PRIMARY KEY,full_name TEXT NOT NULL,photo_path TEXT,created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP); INSERT INTO astronauts(id,full_name) VALUES('existing','Nombre Existente');");
+		db.exec(
+			"CREATE TABLE astronauts(id TEXT PRIMARY KEY,full_name TEXT NOT NULL,photo_path TEXT,created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP); INSERT INTO astronauts(id,full_name) VALUES('existing','Existing Name');"
+		);
 		initializeSchema(db);
-		expect(db.prepare('SELECT full_name,nationality,sex FROM astronauts').get()).toMatchObject({full_name:'Nombre Existente',nationality:null,sex:null});
+		expect(db.prepare('SELECT full_name,nationality,sex FROM astronauts').get()).toMatchObject({
+			full_name: 'Existing Name',
+			nationality: null,
+			sex: null
+		});
 		expect(() => db.prepare('UPDATE astronauts SET sex = ?').run('invalid')).toThrow();
 		db.close();
 	});

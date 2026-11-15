@@ -132,7 +132,7 @@ Rules:
 - Accept comma as decimal separator: `value.replace(',', '.')` before `Number`.
 - Validate ranges, optional pairs (systolic + diastolic together), and
   cross-field rules (systolic > diastolic).
-- Messages in Spanish. Field keys match the input `name` attributes.
+- Messages in English. Field keys match the input `name` attributes.
 - Compute "today" with local time, not `toISOString()`, when rejecting future dates.
 
 ## Form actions

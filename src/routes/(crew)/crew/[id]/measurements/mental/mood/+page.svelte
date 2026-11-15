@@ -6,13 +6,11 @@
 </script>
 
 <svelte:head>
-	<title>
-		Estado de ánimo · Astrolife
-	</title>
+	<title>Mood · Astrolife</title>
 </svelte:head>
 <div class="space-y-5">
-	<MetricCard title="Estado de ánimo" unit="" />
+	<MetricCard title="Mood" unit="" />
 	<MetricChart />
 	<MetricStatistics />
-	<MetricForm label="Estado de ánimo" unit="" />
+	<MetricForm label="Mood" unit="" />
 </div>

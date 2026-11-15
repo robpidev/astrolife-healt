@@ -5,7 +5,7 @@
 
 	let { children }: LayoutProps = $props();
 
-	let onMediciones = $derived(page.url.pathname.startsWith('/mediciones'));
+	let onMeasurements = $derived(page.url.pathname.startsWith('/mediciones'));
 </script>
 
 <div class="flex min-h-screen flex-col bg-slate-50 text-slate-900 antialiased">
@@ -16,7 +16,7 @@
 			<a
 				href={resolve('/(crew)')}
 				class="flex items-center gap-3 rounded-xl focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 focus-visible:outline-none"
-				aria-label="Astrolife, ir a la tripulación"
+				aria-label="Astrolife, go to crew"
 			>
 				<span
 					class="grid size-9 place-items-center rounded-xl bg-teal-600 text-white shadow-sm shadow-teal-600/20"
@@ -36,29 +36,29 @@
 				</span>
 				<span class="flex flex-col leading-none">
 					<span class="text-base font-semibold tracking-tight text-slate-900">Astrolife</span>
-					<span class="mt-1 text-xs font-medium text-slate-500">Centro de control</span>
+					<span class="mt-1 text-xs font-medium text-slate-500">Control center</span>
 				</span>
 			</a>
 
-			<nav aria-label="Navegación principal">
+			<nav aria-label="Main navigation">
 				<ul class="flex items-center gap-1">
 					<li>
 						<a
 							href={resolve('/(crew)')}
 							class="inline-flex min-h-11 items-center rounded-lg px-3 text-sm font-medium text-slate-600 transition hover:bg-slate-100 focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 focus-visible:outline-none"
 						>
-							Tripulación
+							Crew
 						</a>
 					</li>
 					<li>
 						<a
 							href={resolve('/(app)/mediciones')}
-							aria-current={onMediciones ? 'page' : undefined}
-							class="inline-flex min-h-11 items-center rounded-lg px-3 text-sm font-medium transition focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 focus-visible:outline-none {onMediciones
+							aria-current={onMeasurements ? 'page' : undefined}
+							class="inline-flex min-h-11 items-center rounded-lg px-3 text-sm font-medium transition focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 focus-visible:outline-none {onMeasurements
 								? 'bg-teal-50 text-teal-700'
 								: 'text-slate-600 hover:bg-slate-100'}"
 						>
-							Mediciones
+							Measurements
 						</a>
 					</li>
 				</ul>
@@ -72,7 +72,7 @@
 
 	<footer class="border-t border-slate-200/70">
 		<div class="mx-auto w-full max-w-6xl px-4 py-5 text-xs text-slate-500 sm:px-6 lg:px-8">
-			Astrolife · Centro de control de tripulación
+			Astrolife · Crew control center
 		</div>
 	</footer>
 </div>

@@ -8,7 +8,7 @@ export const load: LayoutServerLoad = ({ params }) => {
 	const astronaut = Number.isFinite(id) ? getAstronaut(id) : null;
 
 	if (!astronaut) {
-		error(404, 'Astronauta no encontrado');
+		error(404, 'Astronaut not found');
 	}
 
 	return { astronaut };

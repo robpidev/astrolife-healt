@@ -157,7 +157,7 @@
 </script>
 
 <section aria-labelledby="crew-rail-heading" class="flex min-h-0 flex-1 flex-col">
-	<h2 id="crew-rail-heading" class="sr-only">Selecciona un astronauta</h2>
+	<h2 id="crew-rail-heading" class="sr-only">Select an astronaut</h2>
 
 	<div
 		bind:this={railEl}

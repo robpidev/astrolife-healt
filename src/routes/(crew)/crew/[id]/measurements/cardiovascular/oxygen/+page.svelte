@@ -6,13 +6,11 @@
 </script>
 
 <svelte:head>
-	<title>
-		Oxígeno · Astrolife
-	</title>
+	<title>Oxygen · Astrolife</title>
 </svelte:head>
 <div class="space-y-5">
-	<MetricCard title="Oxígeno" unit="%" />
+	<MetricCard title="Oxygen" unit="%" />
 	<MetricChart />
 	<MetricStatistics />
-	<MetricForm label="Oxígeno" unit="%" />
+	<MetricForm label="Oxygen" unit="%" />
 </div>

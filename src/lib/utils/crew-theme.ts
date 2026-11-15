@@ -70,17 +70,17 @@ export interface CrewStatusMeta {
 
 export const crewStatuses: Record<CrewStatus, CrewStatusMeta> = {
 	mision: {
-		label: 'En misión',
+		label: 'On mission',
 		dot: 'bg-emerald-400',
 		pill: 'bg-emerald-50 text-emerald-700 ring-emerald-200'
 	},
 	entrenamiento: {
-		label: 'Entrenamiento',
+		label: 'Training',
 		dot: 'bg-sky-400',
 		pill: 'bg-sky-50 text-sky-700 ring-sky-200'
 	},
 	descanso: {
-		label: 'Descanso',
+		label: 'Rest',
 		dot: 'bg-slate-400',
 		pill: 'bg-slate-100 text-slate-600 ring-slate-200'
 	}
@@ -92,8 +92,8 @@ export interface CrewTaskMeta {
 }
 
 export const crewTaskKinds: Record<CrewTaskKind, CrewTaskMeta> = {
-	salud: { label: 'Salud', chip: 'bg-rose-50 text-rose-700 ring-rose-200' },
-	entrenamiento: { label: 'Entrenamiento', chip: 'bg-sky-50 text-sky-700 ring-sky-200' },
-	mision: { label: 'Misión', chip: 'bg-indigo-50 text-indigo-700 ring-indigo-200' },
-	logistica: { label: 'Logística', chip: 'bg-amber-50 text-amber-800 ring-amber-200' }
+	salud: { label: 'Health', chip: 'bg-rose-50 text-rose-700 ring-rose-200' },
+	entrenamiento: { label: 'Training', chip: 'bg-sky-50 text-sky-700 ring-sky-200' },
+	mision: { label: 'Mission', chip: 'bg-indigo-50 text-indigo-700 ring-indigo-200' },
+	logistica: { label: 'Logistics', chip: 'bg-amber-50 text-amber-800 ring-amber-200' }
 };

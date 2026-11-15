@@ -15,12 +15,12 @@ import {
 } from '#lib/utils/crew.js';
 
 const astronaut: Astronaut = {
-	nationality: 'Peruana',
+	nationality: 'Peruvian',
 	sex: 'femenino',
 	id: 1,
 	first_name: 'Valentina',
 	last_name: 'Ríos',
-	role: 'Comandante de vuelo',
+	role: 'Flight Commander',
 	status: 'mision',
 	tone: 'indigo',
 	avatar_url: null,
@@ -29,8 +29,8 @@ const astronaut: Astronaut = {
 	missions_completed: 24,
 	badges: [],
 	tasks: [
-		{ id: 1, title: 'Signos vitales', kind: 'salud', done: true, xp: 40 },
-		{ id: 2, title: 'Bicicleta', kind: 'entrenamiento', done: false, xp: 50 }
+		{ id: 1, title: 'Vital signs', kind: 'salud', done: true, xp: 40 },
+		{ id: 2, title: 'Bike', kind: 'entrenamiento', done: false, xp: 50 }
 	]
 };
 
@@ -141,7 +141,7 @@ describe('crew helpers', () => {
 			id: 6,
 			first_name: 'Nadia',
 			last_name: 'Vega',
-			role: 'Especialista de misión',
+			role: 'Mission Specialist',
 			tone: 'cyan'
 		});
 

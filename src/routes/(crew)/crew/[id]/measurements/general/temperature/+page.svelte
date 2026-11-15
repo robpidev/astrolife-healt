@@ -6,13 +6,11 @@
 </script>
 
 <svelte:head>
-	<title>
-		Temperatura · Astrolife
-	</title>
+	<title>Temperature · Astrolife</title>
 </svelte:head>
 <div class="space-y-5">
-	<MetricCard title="Temperatura" unit="°C" />
+	<MetricCard title="Temperature" unit="°C" />
 	<MetricChart />
 	<MetricStatistics />
-	<MetricForm label="Temperatura" unit="°C" />
+	<MetricForm label="Temperature" unit="°C" />
 </div>

@@ -2,19 +2,19 @@
 	import { page } from '$app/state';
 
 	interface Tab {
-	id: string;
-	label: string;
+		id: string;
+		label: string;
 	}
 	let { basePath, tabs }: { basePath: string; tabs: readonly Tab[] } = $props();
 	let links = $derived(
-	[{ id: '', label: 'Resumen' }, ...tabs].map((tab) => ({
-	...tab,
-	href: basePath + (tab.id ? '/' + tab.id : '')
-	}))
+		[{ id: '', label: 'Summary' }, ...tabs].map((tab) => ({
+			...tab,
+			href: basePath + (tab.id ? '/' + tab.id : '')
+		}))
 	);
 </script>
 
-<nav aria-label="Mediciones del área" class="mb-6 flex flex-wrap gap-2">
+<nav aria-label="Area measurements" class="mb-6 flex flex-wrap gap-2">
 	{#each links as link (link.href)}
 		<a
 			href={link.href}

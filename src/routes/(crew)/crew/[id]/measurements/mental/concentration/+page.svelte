@@ -6,13 +6,11 @@
 </script>
 
 <svelte:head>
-	<title>
-		Concentración · Astrolife
-	</title>
+	<title>Concentration · Astrolife</title>
 </svelte:head>
 <div class="space-y-5">
-	<MetricCard title="Concentración" unit="" />
+	<MetricCard title="Concentration" unit="" />
 	<MetricChart />
 	<MetricStatistics />
-	<MetricForm label="Concentración" unit="" />
+	<MetricForm label="Concentration" unit="" />
 </div>
