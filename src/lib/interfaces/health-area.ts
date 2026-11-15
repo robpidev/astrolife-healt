@@ -1,5 +1,4 @@
-export type HealthAreaId =
-	'cardiovascular' | 'sleep' | 'muscular' | 'mental' | 'radiation' | 'general';
+export type HealthAreaId = 'cardiovascular' | 'muscular' | 'mental' | 'radiation' | 'general';
 
 /** Table that stores the readings for a metric. */
 export type MetricSource = 'measurements' | 'symptoms' | 'exercise';

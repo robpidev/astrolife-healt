@@ -1,18 +1,28 @@
 <script lang="ts">
 	import { healthAreas } from '#lib/data/healthAreas.js';
 	import type { HealthAreaId, MetricSnapshot } from '#lib/interfaces/health-area.js';
+	import type { MentalSurveySummary } from '#lib/interfaces/mental-survey.js';
 	import HealthIcon from '#lib/components/astronaut/HealthIcon.svelte';
 	import MetricCard from '#lib/components/metrics/MetricCard.svelte';
 	import MetricChart from '#lib/components/metrics/MetricChart.svelte';
 	import MetricStatistics from '#lib/components/metrics/MetricStatistics.svelte';
+	import SurveySummary from '#lib/components/metrics/SurveySummary.svelte';
 
 	interface Props {
 		areaId: HealthAreaId;
 		basePath: string;
 		snapshots?: readonly MetricSnapshot[];
+		toneByMetric?: Readonly<Record<string, 'green' | 'yellow' | 'red' | null>>;
+		surveySummary?: MentalSurveySummary | null;
 	}
 
-	let { areaId, basePath, snapshots = [] }: Props = $props();
+	let {
+		areaId,
+		basePath,
+		snapshots = [],
+		toneByMetric = {},
+		surveySummary = null
+	}: Props = $props();
 	let area = $derived(healthAreas.find((item) => item.id === areaId)!);
 	let snapshotByMetric = $derived(
 		new Map(snapshots.map((snapshot) => [snapshot.metric_id, snapshot]))
@@ -44,9 +54,11 @@
 				{area.label}
 			</h2>
 		</div>
-		<span class="basis-full text-xs text-slate-500 sm:ml-auto sm:shrink-0 sm:basis-auto">
-			{recordedAt ? `Last update ${recordedAt.slice(0, 10)}` : 'No measurements'}
-		</span>
+		<div class="flex basis-full flex-wrap items-center gap-3 sm:ml-auto sm:shrink-0 sm:basis-auto">
+			<span class="text-xs text-slate-500">
+				{recordedAt ? `Last update ${recordedAt.slice(0, 10)}` : 'No measurements'}
+			</span>
+		</div>
 	</header>
 	<div class={gridClass}>
 		{#each area.metrics as metric (metric.id)}
@@ -58,9 +70,13 @@
 				points={snapshot?.points ?? []}
 				showEmpty={recordedAt !== null}
 				href={basePath + '/measurements/' + area.id + '/' + metric.id}
+				tone={toneByMetric[metric.id] ?? null}
 			/>
 		{/each}
 	</div>
+	{#if areaId === 'mental'}
+		<SurveySummary summary={surveySummary} />
+	{/if}
 	<div class="grid items-start gap-4 2xl:grid-cols-[minmax(0,1fr)_180px]">
 		<MetricChart />
 		<MetricStatistics />

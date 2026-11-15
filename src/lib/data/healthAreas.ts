@@ -31,24 +31,6 @@ export const healthAreas = [
 		]
 	},
 	{
-		id: 'sleep',
-		label: 'Sleep',
-		metrics: [
-			{
-				id: 'duration',
-				label: 'Duration',
-				unit: 'h',
-				metric_code: 'sleep_duration'
-			},
-			{
-				id: 'fatigue',
-				label: 'Fatigue',
-				unit: '',
-				metric_code: 'fatigue'
-			}
-		]
-	},
-	{
 		id: 'muscular',
 		label: 'Muscular health',
 		metrics: [
@@ -94,6 +76,18 @@ export const healthAreas = [
 				label: 'Concentration',
 				unit: '%',
 				metric_code: 'cognitive_accuracy'
+			},
+			{
+				id: 'duration',
+				label: 'Duration',
+				unit: 'h',
+				metric_code: 'sleep_duration'
+			},
+			{
+				id: 'fatigue',
+				label: 'Fatigue',
+				unit: '',
+				metric_code: 'fatigue'
 			}
 		]
 	},

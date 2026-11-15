@@ -124,6 +124,30 @@ INSERT OR IGNORE INTO metric_definitions(code,category,label,unit,value_kind,min
 ('body_mass','general','Masa corporal','kg','numeric',0,NULL);
 
 
+-- Mental health survey (SMIA): one row per session and one row per answered item,
+-- so the item that triggered an alert stays auditable.
+CREATE TABLE IF NOT EXISTS mental_survey_sessions (
+ id INTEGER PRIMARY KEY AUTOINCREMENT,
+ astronaut_id TEXT NOT NULL REFERENCES astronauts(id) ON DELETE CASCADE,
+ recorded_at TEXT NOT NULL,
+ sleep_hours TEXT CHECK(sleep_hours IS NULL OR sleep_hours IN ('under-5','5-to-6-5','7-to-9','over-9')),
+ note TEXT CHECK(note IS NULL OR length(note) <= 500),
+ created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+CREATE INDEX IF NOT EXISTS idx_mental_survey_sessions_history ON mental_survey_sessions(astronaut_id,recorded_at DESC);
+CREATE TABLE IF NOT EXISTS mental_survey_responses (
+ id INTEGER PRIMARY KEY AUTOINCREMENT,
+ session_id INTEGER NOT NULL REFERENCES mental_survey_sessions(id) ON DELETE CASCADE,
+ astronaut_id TEXT NOT NULL REFERENCES astronauts(id) ON DELETE CASCADE,
+ recorded_at TEXT NOT NULL,
+ item_number INTEGER NOT NULL CHECK(item_number BETWEEN 1 AND 10),
+ answer INTEGER NOT NULL CHECK(answer BETWEEN 1 AND 5),
+ created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+CREATE INDEX IF NOT EXISTS idx_mental_survey_responses_history ON mental_survey_responses(astronaut_id,item_number,recorded_at DESC);
+CREATE INDEX IF NOT EXISTS idx_mental_survey_responses_session ON mental_survey_responses(session_id);
+
+
 -- Dashboard metadata extends the health schema without changing its TEXT identifiers.
 CREATE TABLE IF NOT EXISTS crew_profiles (
  id INTEGER PRIMARY KEY AUTOINCREMENT,
