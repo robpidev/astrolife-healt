@@ -82,7 +82,7 @@
 				class="app-scroll grid min-h-0 items-center gap-3 lg:col-start-2 xl:grid-cols-[minmax(0,1fr)_150px] xl:overflow-y-auto xl:overscroll-contain"
 				aria-label="Explore health areas"
 			>
-				<div class="hidden xl:block">
+				<div class="mx-auto w-full max-w-[250px] xl:max-w-none">
 					<AstronautBodyMap />
 				</div>
 				<HealthAreaSelector {basePath} />
