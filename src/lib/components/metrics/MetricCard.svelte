@@ -6,7 +6,7 @@
 	interface Props {
 		title: string;
 		/** Already formatted by the server, e.g. `36.8` or `120/80`. */
-		value?: string | null;
+		value?: string | number | null;
 		unit?: string;
 		points?: readonly number[];
 		href?: string | null;
