@@ -35,3 +35,28 @@ body:has(dialog[open]) {
 		-webkit-tap-highlight-color: transparent;
 	}
 }
+
+/*
+ * Crew rail: every poster shares one base width and is scaled by `--scale`
+ * (1 at the centre, smaller further out). Animating the width itself — rather
+ * than `transform` — keeps the layout box in sync, so the neighbours never
+ * slide underneath the large card. The poster's container-query units follow
+ * the width, so the whole card scales as one piece.
+ */
+.crew-rail-poster {
+	width: calc(min(84vw, 23rem) * var(--scale, 1));
+	transition: width 420ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.crew-rail-instant {
+	transition: none;
+}
+
+/*
+ * Half a viewport of padding on each end lets the first and last posters sit
+ * at the rail centre; without it the row simply stops and the selected card is
+ * never really centred.
+ */
+.crew-rail-track {
+	padding-inline: max(1.25rem, 50%);
+}

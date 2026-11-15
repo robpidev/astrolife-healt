@@ -1,5 +1,7 @@
 <script lang="ts">
 	import { untrack } from 'svelte';
+	import { Tween } from 'svelte/motion';
+	import { cubicOut } from 'svelte/easing';
 	import { afterNavigate, goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import { browser } from '$app/env';
@@ -9,14 +11,12 @@
 	import { astronautName, crewTaskProgress } from '#lib/utils/crew.js';
 	import { crewTones } from '#lib/utils/crew-theme.js';
 	import CrewPoster from './CrewPoster.svelte';
-	import CrewInfo from './CrewInfo.svelte';
 	import CrewDock from './CrewDock.svelte';
 	import AstronautSheet from './AstronautSheet.svelte';
 	import AstronautDialog from './AstronautDialog.svelte';
 	import SettingsDialog from './SettingsDialog.svelte';
 	import type { PageProps } from './$types';
 
-	type Tier = 'center' | 'near' | 'far';
 	type DialogMode = 'closed' | 'create' | 'edit';
 
 	let { data }: PageProps = $props();
@@ -30,6 +30,19 @@
 	let announcement = $state('');
 	let isFullscreen = $state(false);
 	let railEl = $state<HTMLDivElement | null>(null);
+	let isDragging = $state(false);
+
+	// The rail's scroll position is driven by a tween instead of the browser's
+	// native smooth scroll: native scrolling overshoots when a second scroll
+	// starts mid-animation, and it cannot be cancelled cleanly on drag.
+	const railScroll = new Tween(0, { duration: 420, easing: cubicOut });
+
+	// Mirror the tween onto the real scroll position every frame.
+	$effect(() => {
+		const rail = railEl;
+		if (!rail) return;
+		rail.scrollLeft = railScroll.current;
+	});
 
 	let selectedIndex = $derived(crew.findIndex((astronaut) => astronaut.id === selectedId));
 	let selected = $derived(selectedIndex >= 0 ? (crew[selectedIndex] ?? null) : null);
@@ -46,8 +59,9 @@
 	let railItems = $derived(
 		crew.map((astronaut, index) => {
 			const distance = selectedIndex < 0 ? 99 : Math.abs(index - selectedIndex);
-			const tier: Tier = distance === 0 ? 'center' : distance === 1 ? 'near' : 'far';
-			return { astronaut, tier };
+			// 1 = at the rail centre, 0 = far away. Drives scale and opacity.
+			const nearness = Math.max(0, 1 - distance / 2.5);
+			return { astronaut, distance, nearness, scale: 0.62 + 0.38 * nearness };
 		})
 	);
 
@@ -63,25 +77,102 @@
 		}
 	});
 
-	// Keep the focused poster centered in the rail. Effects run after DOM
-	// updates, so the newly selected element already exists.
-	$effect(() => {
-		if (!browser) return;
+	/** Final scale for a card `distance` positions away from the selection. */
+	function scaleAt(distance: number): number {
+		return 0.62 + 0.38 * Math.max(0, 1 - Math.abs(distance) / 2.5);
+	}
 
-		const id = selectedId;
-		if (id === null) return;
-
+	/**
+	 * Scrolls the rail so the selected poster ends up centred once every card
+	 * has reached its final size. The target is computed from the final
+	 * widths, not the current ones, so the tween and the width transition land
+	 * on the same spot: the previous centre card shrinks and slides aside while
+	 * the new one grows in place.
+	 */
+	function centerOn(index: number, smooth: boolean): void {
 		const rail = railEl;
 		if (!rail) return;
 
-		const target = rail.querySelector<HTMLElement>(`[data-astronaut-id="${id}"]`);
-		target?.scrollIntoView({
-			inline: 'center',
-			block: 'nearest',
-			// Untracked: toggling the setting should not re-scroll the rail.
-			behavior: untrack(() => settings.reduced_motion) ? 'auto' : 'smooth'
-		});
+		const ul = rail.querySelector<HTMLElement>('ul.crew-rail-track');
+		if (!ul) return;
+
+		const items = [...ul.querySelectorAll<HTMLElement>('li[data-astronaut-id]')];
+		const first = items[0]?.firstElementChild;
+		if (items.length === 0 || !(first instanceof HTMLElement)) return;
+
+		const style = getComputedStyle(ul);
+		const gap = parseFloat(style.columnGap) || 0;
+		const pad = parseFloat(style.paddingLeft) || 0;
+		// The wrapper width is `min(84vw, 23rem) * scale`; recover the base
+		// from the viewport instead of the mid-transition measured width.
+		const rootFont = parseFloat(getComputedStyle(document.documentElement).fontSize) || 16;
+		const baseWidth = Math.min(window.innerWidth * 0.84, 23 * rootFont);
+
+		let contentWidth = 0;
+		let centre = 0;
+		for (let i = 0; i < items.length; i++) {
+			const width = baseWidth * scaleAt(i - index);
+			if (i === index) centre = pad + contentWidth + width / 2;
+			contentWidth += width + gap;
+		}
+		contentWidth = Math.max(0, contentWidth - gap);
+
+		const max = Math.max(0, 2 * pad + contentWidth - rail.clientWidth);
+		const next = Math.max(0, Math.min(max, Math.round(centre - rail.clientWidth / 2)));
+		if (Math.abs(next - rail.scrollLeft) < 2) return;
+
+		// Start from the real scroll position: the tween's own value is stale
+		// after a manual drag or wheel scroll.
+		railScroll.set(rail.scrollLeft, { duration: 0 });
+		railScroll.set(next, smooth ? {} : { duration: 0 });
+	}
+
+	// Re-centre whenever the selection or the motion setting changes. Widths
+	// transition in CSS, so the target is computed for their final values.
+	$effect(() => {
+		if (!browser) return;
+
+		const index = selectedIndex;
+		if (index < 0 || isDragging) return;
+
+		const smooth = !untrack(() => settings.reduced_motion);
+		requestAnimationFrame(() => centerOn(index, smooth));
 	});
+
+	/**
+	 * Touch dragging must win over auto-centring, otherwise the rail snaps back
+	 * under the finger. Implemented as an attachment so the scroll container
+	 * stays a plain presentational element for assistive tech.
+	 */
+	function railDrag(node: HTMLElement): () => void {
+		const stopTween = (): void => {
+			// Taking over the scroll must freeze the tween where the rail is.
+			railScroll.set(node.scrollLeft, { duration: 0 });
+		};
+		const start = (): void => {
+			isDragging = true;
+			stopTween();
+		};
+		const end = (): void => {
+			if (!isDragging) return;
+			isDragging = false;
+			if (selectedIndex >= 0) centerOn(selectedIndex, true);
+		};
+
+		node.addEventListener('pointerdown', start, { passive: true });
+		node.addEventListener('pointerup', end, { passive: true });
+		node.addEventListener('pointercancel', end, { passive: true });
+		node.addEventListener('pointerleave', end, { passive: true });
+		node.addEventListener('wheel', stopTween, { passive: true });
+
+		return () => {
+			node.removeEventListener('pointerdown', start);
+			node.removeEventListener('pointerup', end);
+			node.removeEventListener('pointercancel', end);
+			node.removeEventListener('pointerleave', end);
+			node.removeEventListener('wheel', stopTween);
+		};
+	}
 
 	function selectAt(index: number): void {
 		const astronaut = crew[index];
@@ -320,27 +411,31 @@
 		</div>
 	</header>
 
-	<main class="relative z-10 flex flex-1 flex-col pb-44 sm:pb-40">
-		<section aria-labelledby="crew-rail-heading" class="mt-4">
+	<!--
+		The rail owns the space left between the header and the dock. Cards are
+		centred on that free area and grow symmetrically from its mid line.
+	-->
+	<!--
+		One poster is pinned to the centre of the free area; the rest ride behind
+		it in a scrollable rail. A reserved slot inside the rail keeps the same
+		footprint as the pinned poster, so neighbours are never covered.
+	-->
+	<main class="relative z-10 flex min-h-0 flex-1 flex-col pb-44 sm:pb-40">
+		<section aria-labelledby="crew-rail-heading" class="flex min-h-0 flex-1 flex-col">
 			<h2 id="crew-rail-heading" class="sr-only">Selecciona un astronauta</h2>
 
-			<!--
-				The scroll container and the flex track are separate on purpose:
-				`justify-center` on an overflowing flex container clips the leading
-				items and makes them unreachable. `mx-auto` on a `w-max` track
-				centers short crews and collapses to 0 when the rail overflows.
-			-->
 			<div
 				bind:this={railEl}
-				class="touch-pan-x snap-x snap-mandatory [scrollbar-width:none] overflow-x-auto py-4 sm:py-6 [&::-webkit-scrollbar]:hidden"
+				{@attach railDrag}
+				class="relative flex min-h-0 flex-1 touch-pan-x [scrollbar-width:none] items-center overflow-x-auto py-4 sm:py-6 [&::-webkit-scrollbar]:hidden"
 			>
-				<ul class="mx-auto flex w-max items-end gap-3 px-5 sm:gap-4 sm:px-8">
+				<ul class="crew-rail-track mx-auto flex w-max items-center gap-3 sm:gap-4">
 					{#if crew.length === 0}
-						<li class="shrink-0 snap-center">
+						<li class="shrink-0">
 							<button
 								type="button"
 								onclick={openCreate}
-								class="flex h-[20rem] w-[min(80vw,21rem)] flex-col items-center justify-center gap-3 rounded-3xl border-2 border-dashed border-white/20 bg-white/5 text-slate-300 transition hover:border-teal-400/60 hover:bg-white/10 hover:text-white focus-visible:ring-2 focus-visible:ring-teal-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950 focus-visible:outline-none sm:h-[29rem]"
+								class="flex aspect-[3/4] w-[min(84vw,23rem)] flex-col items-center justify-center gap-3 rounded-3xl border-2 border-dashed border-white/20 bg-white/5 text-slate-300 transition hover:border-teal-400/60 hover:bg-white/10 hover:text-white focus-visible:ring-2 focus-visible:ring-teal-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950 focus-visible:outline-none"
 							>
 								<span
 									class="grid size-16 place-items-center rounded-full border border-white/20 text-3xl"
@@ -351,22 +446,31 @@
 						</li>
 					{:else}
 						{#each railItems as item (item.astronaut.id)}
-							<li class="shrink-0 snap-center" data-astronaut-id={item.astronaut.id}>
-								<CrewPoster
-									astronaut={item.astronaut}
-									tier={item.tier}
-									selected={item.astronaut.id === selectedId}
-									reducedMotion={settings.reduced_motion}
-									onselect={handleSelect}
-								/>
+							<li
+								class="shrink-0"
+								data-astronaut-id={item.astronaut.id}
+								data-focused={item.astronaut.id === selectedId}
+							>
+								<div
+									class="crew-rail-poster {settings.reduced_motion ? 'crew-rail-instant' : ''}"
+									style:--scale={item.scale}
+								>
+									<CrewPoster
+										astronaut={item.astronaut}
+										focused={item.astronaut.id === selectedId}
+										nearness={item.nearness}
+										reducedMotion={settings.reduced_motion}
+										onselect={handleSelect}
+									/>
+								</div>
 							</li>
 						{/each}
 
-						<li class="shrink-0 snap-center">
+						<li class="shrink-0">
 							<button
 								type="button"
 								onclick={openCreate}
-								class="flex h-[15rem] w-[min(36vw,13.5rem)] flex-col items-center justify-center gap-2 rounded-3xl border-2 border-dashed border-white/20 bg-white/5 text-slate-300 transition hover:border-teal-400/60 hover:bg-white/10 hover:text-white focus-visible:ring-2 focus-visible:ring-teal-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950 focus-visible:outline-none sm:h-[21rem]"
+								class="flex aspect-[3/4] w-[min(55vw,16.5rem)] flex-col items-center justify-center gap-2 rounded-3xl border-2 border-dashed border-white/20 bg-white/5 text-slate-300 transition hover:border-teal-400/60 hover:bg-white/10 hover:text-white focus-visible:ring-2 focus-visible:ring-teal-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950 focus-visible:outline-none"
 							>
 								<span
 									class="grid size-12 place-items-center rounded-full border border-white/20 text-2xl"
@@ -379,40 +483,6 @@
 				</ul>
 			</div>
 		</section>
-
-		{#if selected}
-			<CrewInfo
-				astronaut={selected}
-				reducedMotion={settings.reduced_motion}
-				largeText={settings.large_text}
-				highContrast={settings.high_contrast}
-				onopen={openSelected}
-				onedit={openEdit}
-			/>
-		{:else}
-			<section
-				class="relative z-10 mx-auto mt-6 w-full max-w-3xl px-5 sm:px-8"
-				aria-labelledby="crew-empty-heading"
-			>
-				<div
-					class="rounded-3xl border border-white/10 bg-slate-900/60 p-8 text-center backdrop-blur"
-				>
-					<h2 id="crew-empty-heading" class="text-xl font-semibold tracking-tight text-white">
-						Todavía no hay astronautas
-					</h2>
-					<p class="mx-auto mt-1 max-w-md text-sm text-slate-400">
-						Agrega el primer tripulante para empezar a registrar la misión.
-					</p>
-					<button
-						type="button"
-						onclick={openCreate}
-						class="mt-5 inline-flex min-h-11 items-center justify-center rounded-xl bg-teal-500 px-4 text-sm font-semibold text-slate-950 transition hover:bg-teal-400 focus-visible:ring-2 focus-visible:ring-teal-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950 focus-visible:outline-none"
-					>
-						Agregar astronauta
-					</button>
-				</div>
-			</section>
-		{/if}
 	</main>
 
 	<CrewDock
