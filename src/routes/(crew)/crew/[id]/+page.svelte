@@ -9,4 +9,4 @@
 <svelte:head>
 	<title>Astronaut profile · Astrolife Health</title>
 </svelte:head>
-<HealthAreaOverview areaId="cardiovascular" {basePath} />
+<HealthAreaOverview areaId="cardiovascular" {basePath} snapshots={data.snapshots} />

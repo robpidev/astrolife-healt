@@ -1,6 +1,10 @@
 import type { HealthArea } from '#lib/interfaces/health-area.js';
 
-/** Health navigation metadata; clinical values are loaded separately. */
+/**
+ * Health navigation metadata; clinical values are loaded separately.
+ * `metric_code` links each card to `metric_definitions` so the overview can
+ * query the series that backs it.
+ */
 export const healthAreas = [
 	{
 		id: 'cardiovascular',
@@ -9,17 +13,20 @@ export const healthAreas = [
 			{
 				id: 'heart-rate',
 				label: 'Heart rate',
-				unit: 'bpm'
+				unit: 'bpm',
+				metric_code: 'heart_rate'
 			},
 			{
 				id: 'blood-pressure',
 				label: 'Blood pressure',
-				unit: 'mmHg'
+				unit: 'mmHg',
+				metric_code: 'blood_pressure'
 			},
 			{
 				id: 'oxygen',
 				label: 'Oxygen',
-				unit: '%'
+				unit: '%',
+				metric_code: 'spo2'
 			}
 		]
 	},
@@ -30,12 +37,14 @@ export const healthAreas = [
 			{
 				id: 'duration',
 				label: 'Duration',
-				unit: 'h'
+				unit: 'h',
+				metric_code: 'sleep_duration'
 			},
 			{
 				id: 'fatigue',
 				label: 'Fatigue',
-				unit: ''
+				unit: '',
+				metric_code: 'fatigue'
 			}
 		]
 	},
@@ -46,17 +55,21 @@ export const healthAreas = [
 			{
 				id: 'exercise',
 				label: 'Exercise',
-				unit: 'min'
+				unit: 'min',
+				metric_code: 'exercise_duration',
+				source: 'exercise'
 			},
 			{
 				id: 'strength',
 				label: 'Strength',
-				unit: ''
+				unit: 'N',
+				metric_code: 'muscle_strength'
 			},
 			{
 				id: 'pain',
 				label: 'Pain',
-				unit: ''
+				unit: '',
+				metric_code: 'muscle_pain'
 			}
 		]
 	},
@@ -67,17 +80,20 @@ export const healthAreas = [
 			{
 				id: 'stress',
 				label: 'Stress',
-				unit: ''
+				unit: '',
+				metric_code: 'stress'
 			},
 			{
 				id: 'mood',
 				label: 'Mood',
-				unit: ''
+				unit: '',
+				metric_code: 'mood'
 			},
 			{
 				id: 'concentration',
 				label: 'Concentration',
-				unit: ''
+				unit: '%',
+				metric_code: 'cognitive_accuracy'
 			}
 		]
 	},
@@ -88,7 +104,9 @@ export const healthAreas = [
 			{
 				id: 'dose',
 				label: 'Dose',
-				unit: 'mSv'
+				unit: 'mSv',
+				metric_code: 'radiation_interval',
+				decimals: 3
 			}
 		]
 	},
@@ -99,22 +117,28 @@ export const healthAreas = [
 			{
 				id: 'temperature',
 				label: 'Body temperature',
-				unit: '°C'
+				unit: '°C',
+				metric_code: 'body_temperature'
 			},
 			{
 				id: 'hydration',
 				label: 'Hydration',
-				unit: 'L'
+				unit: 'L',
+				metric_code: 'water_intake',
+				unit_scale: 0.001
 			},
 			{
 				id: 'weight',
 				label: 'Weight',
-				unit: 'kg'
+				unit: 'kg',
+				metric_code: 'body_mass'
 			},
 			{
 				id: 'symptoms',
 				label: 'Symptoms',
-				unit: ''
+				unit: '',
+				metric_code: 'symptom_intensity',
+				source: 'symptoms'
 			}
 		]
 	}

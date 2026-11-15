@@ -6,4 +6,4 @@
 	let basePath = $derived('/crew/' + data.astronaut.id);
 </script>
 
-<HealthAreaOverview areaId="radiation" {basePath} />
+<HealthAreaOverview areaId="radiation" {basePath} snapshots={data.snapshots} />

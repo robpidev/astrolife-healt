@@ -1,13 +1,36 @@
 <script lang="ts">
 	import { healthAreas } from '#lib/data/healthAreas.js';
-	import type { HealthAreaId } from '#lib/interfaces/health-area.js';
+	import type { HealthAreaId, MetricSnapshot } from '#lib/interfaces/health-area.js';
 	import HealthIcon from '#lib/components/astronaut/HealthIcon.svelte';
 	import MetricCard from '#lib/components/metrics/MetricCard.svelte';
 	import MetricChart from '#lib/components/metrics/MetricChart.svelte';
 	import MetricStatistics from '#lib/components/metrics/MetricStatistics.svelte';
 
-	let { areaId, basePath }: { areaId: HealthAreaId; basePath: string } = $props();
+	interface Props {
+		areaId: HealthAreaId;
+		basePath: string;
+		snapshots?: readonly MetricSnapshot[];
+	}
+
+	let { areaId, basePath, snapshots = [] }: Props = $props();
 	let area = $derived(healthAreas.find((item) => item.id === areaId)!);
+	let snapshotByMetric = $derived(
+		new Map(snapshots.map((snapshot) => [snapshot.metric_id, snapshot]))
+	);
+
+	let recordedAt = $derived.by(() => {
+		const dates = snapshots
+			.map((snapshot) => snapshot.recorded_at)
+			.filter((recordedAt): recordedAt is string => recordedAt !== null);
+		if (dates.length === 0) return null;
+		return dates.reduce((latest, current) => (current > latest ? current : latest));
+	});
+
+	let gridClass = $derived(
+		area.metrics.length > 3
+			? 'grid gap-3 sm:grid-cols-2 lg:grid-cols-4'
+			: 'grid gap-3 sm:grid-cols-2 lg:grid-cols-3'
+	);
 </script>
 
 <div class="space-y-5">
@@ -22,14 +45,18 @@
 			</h2>
 		</div>
 		<span class="basis-full text-xs text-slate-500 sm:ml-auto sm:shrink-0 sm:basis-auto">
-			No measurements
+			{recordedAt ? `Last update ${recordedAt.slice(0, 10)}` : 'No measurements'}
 		</span>
 	</header>
-	<div class="grid gap-3 sm:grid-cols-3">
+	<div class={gridClass}>
 		{#each area.metrics as metric (metric.id)}
+			{@const snapshot = snapshotByMetric.get(metric.id)}
 			<MetricCard
 				title={metric.label}
+				value={snapshot?.display ?? null}
 				unit={metric.unit}
+				points={snapshot?.points ?? []}
+				showEmpty={recordedAt !== null}
 				href={basePath + '/measurements/' + area.id + '/' + metric.id}
 			/>
 		{/each}
