@@ -1,3 +1,5 @@
+import type { HealthArea } from '#lib/interfaces/health-area.js';
+
 /** Health navigation metadata; clinical values are loaded separately. */
 export const healthAreas = [
 	{
@@ -116,4 +118,4 @@ export const healthAreas = [
 			}
 		]
 	}
-];
+] as const satisfies readonly HealthArea[];

@@ -1,11 +1,12 @@
 <script lang="ts">
 	import { healthAreas } from '#lib/data/healthAreas.js';
+	import type { HealthAreaId } from '#lib/interfaces/health-area.js';
 	import HealthIcon from '#lib/components/astronaut/HealthIcon.svelte';
 	import MetricCard from '#lib/components/metrics/MetricCard.svelte';
 	import MetricChart from '#lib/components/metrics/MetricChart.svelte';
 	import MetricStatistics from '#lib/components/metrics/MetricStatistics.svelte';
 
-	let { areaId, basePath }: { areaId: string; basePath: string } = $props();
+	let { areaId, basePath }: { areaId: HealthAreaId; basePath: string } = $props();
 	let area = $derived(healthAreas.find((item) => item.id === areaId)!);
 </script>
 
