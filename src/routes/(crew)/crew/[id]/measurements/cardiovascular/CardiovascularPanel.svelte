@@ -5,6 +5,7 @@
 		value: number | null;
 		measured_at: string;
 		source: string;
+		warning: string | null;
 		systolic: number | null;
 		diastolic: number | null;
 	}
@@ -98,7 +99,6 @@
 				? formatNumber(reading.systolic) + ' / ' + formatNumber(reading.diastolic)
 				: formatNumber(reading.value)
 		})).sort((a, b) => new Date(b.measured_at).getTime() - new Date(a.measured_at).getTime()));
-	let hasSimulatedReadings = $derived(tableRows.some((reading) => reading.simulated));
 </script>
 
 <svelte:head>
@@ -106,9 +106,7 @@
 </svelte:head>
 
 <div class="space-y-6">
-	{#if hasSimulatedReadings}
-		<p class="rounded-lg border border-amber-300/20 bg-amber-300/5 px-4 py-3 text-sm text-amber-200">Datos ficticios de demostración.</p>
-	{/if}
+
 	<header class="border-b border-cyan-200/10 pb-4">
 		<p class="mb-1 text-xs tracking-widest text-cyan-300 uppercase">
 			Mediciones cardiovasculares
@@ -134,6 +132,10 @@
 						<span class="rounded-full border border-amber-300/25 bg-amber-300/10 px-2 py-1 text-xs text-amber-200">
 							Simulado
 						</span>
+					{:else if chart.latest?.source === 'manual'}
+						<span class="rounded-full border border-cyan-300/25 bg-cyan-300/10 px-2 py-1 text-xs text-cyan-200">Manual</span>
+					{:else if chart.latest}
+						<span class="rounded-full border border-cyan-300/25 bg-cyan-300/10 px-2 py-1 text-xs text-cyan-200">{chart.latest.source === 'sensor' ? 'Sensor' : chart.latest.source}</span>
 					{/if}
 				</div>
 				<p class="mt-3 text-3xl font-light text-cyan-100">
@@ -149,6 +151,9 @@
 				<p class="mt-2 text-xs text-slate-500">
 					{chart.latest ? 'Última lectura: ' + formatDate(chart.latest.measured_at) : 'Sin mediciones registradas.'}
 				</p>
+				{#if chart.latest?.warning}
+					<p role="status" class="mt-3 rounded-lg border border-amber-200/20 bg-amber-200/5 p-3 text-sm leading-relaxed text-amber-100">{chart.latest.warning}</p>
+				{/if}
 			</div>
 			<div class="rounded-xl border border-cyan-200/10 bg-[#081322] p-4">
 				<h4 class="text-sm font-medium text-slate-200">
