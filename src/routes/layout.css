@@ -29,6 +29,30 @@ body:has(dialog[open]) {
 	overflow: hidden;
 }
 
+/*
+ * App-like scroll areas: a thin translucent scrollbar and no scroll chaining,
+ * so the profile shell stays locked to the viewport while its panels scroll.
+ */
+.app-scroll {
+	scrollbar-width: thin;
+	scrollbar-color: rgb(34 211 238 / 0.28) transparent;
+	overscroll-behavior: contain;
+}
+
+.app-scroll::-webkit-scrollbar {
+	width: 8px;
+	height: 8px;
+}
+
+.app-scroll::-webkit-scrollbar-thumb {
+	border-radius: 9999px;
+	background: rgb(34 211 238 / 0.25);
+}
+
+.app-scroll::-webkit-scrollbar-track {
+	background: transparent;
+}
+
 /* Kiosk/touch screens should not flash a grey highlight on every tap. */
 @media (hover: none) {
 	* {
