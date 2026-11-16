@@ -182,6 +182,7 @@
 		{#if entry}
 			<button
 				type="button"
+				data-tour="add-reading"
 				onclick={() => (showEntry = true)}
 				class="min-h-12 rounded-xl bg-cyan-300 px-5 text-sm font-bold text-slate-950 transition hover:bg-cyan-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-300"
 			>
@@ -252,14 +253,18 @@
 		</section>
 	{/if}
 
-	<MetricChart {points} {unit} {decimals} label={`${label} trend`} tone={chartTone} />
+	<div data-tour="metric-chart">
+		<MetricChart {points} {unit} {decimals} label={`${label} trend`} tone={chartTone} />
+	</div>
 
 	{#if children}
 		{@render children()}
 	{/if}
 
 	<MetricStatistics {points} {unit} {decimals} label={`${label} statistics`} />
-	<MetricHistory {readings} {unit} {decimals} title={`${label} history`} />
+	<div data-tour="metric-history">
+		<MetricHistory {readings} {unit} {decimals} title={`${label} history`} />
+	</div>
 </div>
 
 {#if entry && showEntry}

@@ -1,9 +1,17 @@
+import { error } from '@sveltejs/kit';
+import { demoMeasurements } from '#lib/demo/mock-data.js';
 import { healthAreas } from '#lib/data/healthAreas.js';
 import { getAreaSnapshots } from '#lib/server/health-metrics.js';
 import type { PageServerLoad } from './$types';
 
-export const load: PageServerLoad = async ({ parent }) => {
+export const load: PageServerLoad = async ({ parent, locals }) => {
 	const { astronaut } = await parent();
+
+	if (locals.demo) {
+		const demo = demoMeasurements(astronaut.id);
+		if (!demo) error(404, 'Astronaut not found');
+		return demo;
+	}
 
 	const areas = healthAreas.map((area) => {
 		const snapshots = getAreaSnapshots(astronaut.id, area.id);

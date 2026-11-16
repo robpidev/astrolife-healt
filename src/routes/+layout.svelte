@@ -6,9 +6,20 @@
 	import favicon from '#lib/assets/favicon.svg';
 	import { resetSharedTransition, sharedTransition } from '#lib/services/view-transition.svelte.js';
 	import { resolveSharedTransition } from '#lib/utils/shared-transition.js';
+	import DemoToolbar from '#lib/demo/DemoToolbar.svelte';
+	import { bootDemo } from '#lib/demo/demo-boot.js';
+	import { isDemoMode } from '#lib/demo/mode.js';
 	import type { LayoutProps } from './$types';
 
 	let { children }: LayoutProps = $props();
+
+	let demoActive = $state(false);
+
+	$effect(() => {
+		const active = isDemoMode();
+		demoActive = active;
+		if (active) bootDemo();
+	});
 
 	type ViewTransitionDocument = Document & {
 		startViewTransition?: (callback: () => Promise<void>) => { finished: Promise<void> };
@@ -59,3 +70,5 @@
 </svelte:head>
 
 {@render children()}
+
+{#if demoActive}<DemoToolbar />{/if}

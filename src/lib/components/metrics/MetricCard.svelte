@@ -13,6 +13,8 @@
 		/** Only meaningful when the card owns the reading; metric-detail pages render no value. */
 		showEmpty?: boolean;
 		tone?: SurveyTone | null;
+		/** Marks the card for the demo tour. */
+		tourId?: string | null;
 	}
 
 	let {
@@ -22,7 +24,8 @@
 		points = [],
 		href = null,
 		showEmpty = false,
-		tone = null
+		tone = null,
+		tourId = null
 	}: Props = $props();
 
 	// Whole strings stay literal so Tailwind keeps the tone classes in the build.
@@ -82,13 +85,17 @@
 {#if href}
 	<a
 		href={resolve(href.slice(1) as `crew/${string}`)}
+		data-tour={tourId ?? undefined}
 		class="group block rounded-xl border border-cyan-200/15 bg-[#0b1b2e] p-4 transition-colors hover:border-cyan-300/40 hover:bg-[#0d2137] focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-cyan-300"
 	>
 		{@render content()}
 		<span class="sr-only">View measurement</span>
 	</a>
 {:else}
-	<article class="rounded-xl border border-cyan-200/15 bg-[#0b1b2e] p-4">
+	<article
+		class="rounded-xl border border-cyan-200/15 bg-[#0b1b2e] p-4"
+		data-tour={tourId ?? undefined}
+	>
 		{@render content()}
 	</article>
 {/if}

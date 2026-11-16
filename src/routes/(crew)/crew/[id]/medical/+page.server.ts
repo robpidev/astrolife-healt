@@ -1,4 +1,5 @@
 import { error, fail } from '@sveltejs/kit';
+import { demoMedical } from '#lib/demo/mock-data.js';
 import { allergySeverities } from '#lib/data/medical.js';
 import type { AllergySeverity, MedicalMarkdownField } from '#lib/interfaces/medical-profile.js';
 import {
@@ -21,9 +22,15 @@ function profileId(params: { id: string }): number {
 	return id;
 }
 
-export const load: PageServerLoad = ({ params }) => ({
-	profile: getMedicalProfile(profileId(params))
-});
+export const load: PageServerLoad = ({ params, locals }) => {
+	if (locals.demo) {
+		const demo = demoMedical(profileId(params));
+		if (!demo) error(404, 'Astronaut not found');
+		return demo;
+	}
+
+	return { profile: getMedicalProfile(profileId(params)) };
+};
 
 const MARKDOWN_FIELDS: readonly MedicalMarkdownField[] = ['medical_history', 'baseline_notes'];
 

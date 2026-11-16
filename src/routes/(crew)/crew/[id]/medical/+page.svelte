@@ -28,7 +28,7 @@
 	<title>Medical dossier · Astrolife</title>
 </svelte:head>
 
-<div class="space-y-5">
+<div class="space-y-5" data-tour="medical-dossier">
 	<header class="flex flex-wrap items-end justify-between gap-3 border-b border-cyan-200/10 pb-4">
 		<div>
 			<p class="text-[11px] font-semibold tracking-[0.18em] text-slate-500 uppercase">

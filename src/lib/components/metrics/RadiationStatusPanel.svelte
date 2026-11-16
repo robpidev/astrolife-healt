@@ -69,7 +69,7 @@
 	);
 </script>
 
-<section aria-labelledby="radiation-status-title" class="space-y-4">
+<section aria-labelledby="radiation-status-title" class="space-y-4" data-tour="radiation-summary">
 	<div class="rounded-2xl border border-cyan-200/15 bg-[#0b1b2e] p-5">
 		<div class="flex flex-wrap items-start justify-between gap-3">
 			<div class="min-w-0">

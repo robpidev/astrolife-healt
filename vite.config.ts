@@ -1,13 +1,37 @@
 import tailwindcss from '@tailwindcss/vite';
 import { defineConfig } from 'vitest/config';
 import adapterNode from '@sveltejs/adapter-node';
+import adapterStatic from '@sveltejs/adapter-static';
 import adapterVercel from '@sveltejs/adapter-vercel';
 import { sveltekit } from '@sveltejs/kit/vite';
 
-// One build, two targets: Vercel by default (the hosted demo) and a standalone
-// Node server for the downloadable Docker image. The Dockerfile sets
-// BUILD_TARGET=node, so a plain `bun run build` keeps the hosted behaviour.
-const target = process.env.BUILD_TARGET === 'node' ? 'node' : 'vercel';
+// Three targets: Vercel by default (the hosted app), a standalone Node server
+// for the Docker image (`BUILD_TARGET=node`), and the static demo
+// (`BUILD_TARGET=demo`, driven by `scripts/build-demo.ts`).
+const target =
+	process.env.BUILD_TARGET === 'node'
+		? 'node'
+		: process.env.BUILD_TARGET === 'demo'
+			? 'demo'
+			: 'vercel';
+
+// GitHub Pages project sites live under `/<repo>`; the demo build reads it from
+// the environment so the same script works for root-hosted deployments.
+const base: '' | `/${string}` =
+	target === 'demo' && process.env.BASE_PATH ? (process.env.BASE_PATH as `/${string}`) : '';
+
+const adapter =
+	target === 'node'
+		? adapterNode()
+		: target === 'demo'
+			? adapterStatic({
+					pages: 'build',
+					assets: 'build',
+					fallback: process.env.DEMO_FALLBACK ?? '200.html',
+					precompress: false,
+					strict: false
+				})
+			: adapterVercel();
 
 export default defineConfig({
 	server: {
@@ -16,12 +40,13 @@ export default defineConfig({
 	plugins: [
 		tailwindcss(),
 		sveltekit({
+			paths: { base },
 			compilerOptions: {
 				// Force runes mode for the project, except for libraries. Can be removed in svelte 6.
 				runes: ({ filename }) =>
 					filename.split(/[/\\]/).includes('node_modules') ? undefined : true
 			},
-			adapter: target === 'node' ? adapterNode() : adapterVercel()
+			adapter
 		})
 	],
 	test: {

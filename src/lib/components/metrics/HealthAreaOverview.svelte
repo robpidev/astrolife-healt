@@ -73,7 +73,7 @@
 			</span>
 		</div>
 	</header>
-	<div class={gridClass}>
+	<div class={gridClass} data-tour="area-metrics">
 		{#each area.metrics as metric (metric.id)}
 			{@const snapshot = snapshotByMetric.get(metric.id)}
 			<MetricCard
@@ -84,6 +84,7 @@
 				showEmpty={recordedAt !== null}
 				href={basePath + '/measurements/' + area.id + '/' + metric.id}
 				tone={toneByMetric[metric.id] ?? null}
+				tourId={`metric-card-${metric.id}`}
 			/>
 		{/each}
 	</div>
