@@ -92,6 +92,20 @@
 
 	let selectedAssessment = $derived(assessmentByOrgan.get(selected) ?? null);
 	let unit = $derived(selectedAssessment?.guideline.unit ?? 'mGy-Eq');
+	// Stale readings still warrant the amber tone; unknown has no assessment yet.
+	let selectedTone = $derived.by<'green' | 'yellow' | 'red' | null>(() => {
+		switch (selectedAssessment?.status ?? 'unknown') {
+			case 'green':
+				return 'green';
+			case 'red':
+				return 'red';
+			case 'yellow':
+			case 'stale':
+				return 'yellow';
+			default:
+				return null;
+		}
+	});
 	let organReadings = $derived(data.readings.filter((reading) => reading.detail === selected));
 	let points = $derived(organReadings.map((reading) => reading.value).reverse());
 
@@ -223,7 +237,13 @@
 				No {data.organs[selected]} dose logged in the last 30 days.
 			</p>
 		{:else}
-			<MetricChart {points} {unit} decimals={1} label={`${data.organs[selected]} trend`} />
+			<MetricChart
+				{points}
+				{unit}
+				decimals={1}
+				label={`${data.organs[selected]} trend`}
+				tone={selectedTone}
+			/>
 			<MetricHistory
 				readings={organReadings}
 				{unit}

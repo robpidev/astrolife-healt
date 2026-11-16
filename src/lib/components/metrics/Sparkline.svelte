@@ -3,9 +3,20 @@
 
 	interface Props {
 		points?: readonly number[];
+		tone?: 'green' | 'yellow' | 'red' | null;
 	}
 
-	let { points = [] }: Props = $props();
+	let { points = [], tone = null }: Props = $props();
+
+	// SVG attributes cannot use Tailwind classes, so the tones stay as whole hex strings.
+	const toneColors: Record<'green' | 'yellow' | 'red' | 'default', string> = {
+		green: '#2dd4bf',
+		yellow: '#fbbf24',
+		red: '#fb7185',
+		default: '#67e8f9'
+	};
+
+	let strokeColor = $derived(tone ? toneColors[tone] : toneColors.default);
 
 	const uid = $props.id();
 	const gradientId = 'sparkline-' + uid;
@@ -25,15 +36,15 @@
 		{#if hasData}
 			<defs>
 				<linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
-					<stop offset="0%" stop-color="#67e8f9" stop-opacity="0.28" />
-					<stop offset="100%" stop-color="#67e8f9" stop-opacity="0" />
+					<stop offset="0%" stop-color={strokeColor} stop-opacity="0.28" />
+					<stop offset="100%" stop-color={strokeColor} stop-opacity="0" />
 				</linearGradient>
 			</defs>
 			<path d={area} fill="url(#{gradientId})" />
 			<path
 				d={line}
 				fill="none"
-				stroke="#67e8f9"
+				stroke={strokeColor}
 				stroke-width="1.5"
 				stroke-linecap="round"
 				stroke-linejoin="round"

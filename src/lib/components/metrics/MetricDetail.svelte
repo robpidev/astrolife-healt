@@ -96,7 +96,11 @@
 	});
 
 	let badgeLabel = $derived(assessment?.label ?? statusLabel);
-
+	// The chart only knows the three tones; an unknown severity keeps the default colour.
+	let chartTone = $derived.by<'green' | 'yellow' | 'red' | null>(() => {
+		const severity = assessment?.severity ?? statusTone;
+		return severity === 'unknown' ? null : severity;
+	});
 	let measurementsHref = $derived(resolve(`${basePath}/measurements`.slice(1) as `crew/${string}`));
 	let areaHref = $derived(
 		resolve(`${basePath}/measurements/${areaId}`.slice(1) as `crew/${string}`)
@@ -201,7 +205,7 @@
 		</section>
 	{/if}
 
-	<MetricChart {points} {unit} {decimals} label={`${label} trend`} />
+	<MetricChart {points} {unit} {decimals} label={`${label} trend`} tone={chartTone} />
 	<MetricStatistics {points} {unit} {decimals} label={`${label} statistics`} />
 	<MetricHistory {readings} {unit} {decimals} title={`${label} history`} />
 </div>

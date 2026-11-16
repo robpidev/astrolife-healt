@@ -1,3 +1,5 @@
+import type { HealthIndicatorId } from '#lib/utils/health-assessment.js';
+
 export type HealthAreaId = 'cardiovascular' | 'muscular' | 'mental' | 'radiation' | 'general';
 
 /** Table that stores the readings for a metric. */
@@ -15,6 +17,8 @@ export interface HealthMetric {
 	unit_scale?: number;
 	/** Fixed decimals for the displayed value; defaults to 1 for non-integers. */
 	decimals?: number;
+	/** Clinical indicator that decides the card tone, when the metric has one. */
+	indicator?: HealthIndicatorId;
 }
 
 export interface HealthArea {

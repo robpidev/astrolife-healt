@@ -73,7 +73,7 @@
 	<p class="mt-3 text-3xl font-light tracking-tight text-cyan-100">
 		{value ?? '—'}{#if unit}<span class="ml-1 text-xs font-normal text-slate-500">{unit}</span>{/if}
 	</p>
-	<Sparkline {points} />
+	<Sparkline {points} {tone} />
 	{#if showEmpty && value === null}
 		<p class="mt-1 text-xs text-slate-500">No measurements recorded.</p>
 	{/if}

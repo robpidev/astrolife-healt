@@ -14,25 +14,29 @@ export const healthAreas = [
 				id: 'heart-rate',
 				label: 'Heart rate',
 				unit: 'bpm',
-				metric_code: 'heart_rate'
+				metric_code: 'heart_rate',
+				indicator: 'heart-rate'
 			},
 			{
 				id: 'blood-pressure',
 				label: 'Blood pressure',
 				unit: 'mmHg',
-				metric_code: 'blood_pressure'
+				metric_code: 'blood_pressure',
+				indicator: 'blood-pressure'
 			},
 			{
 				id: 'oxygen',
 				label: 'Oxygen',
 				unit: '%',
-				metric_code: 'spo2'
+				metric_code: 'spo2',
+				indicator: 'spo2'
 			},
 			{
 				id: 'respiratory-rate',
 				label: 'Respiratory rate',
 				unit: 'breaths/min',
-				metric_code: 'respiratory_rate'
+				metric_code: 'respiratory_rate',
+				indicator: 'respiratory-rate'
 			}
 		]
 	},
@@ -87,7 +91,8 @@ export const healthAreas = [
 				id: 'duration',
 				label: 'Sleep duration',
 				unit: 'h',
-				metric_code: 'sleep_duration'
+				metric_code: 'sleep_duration',
+				indicator: 'sleep'
 			},
 			{
 				id: 'fatigue',
@@ -125,7 +130,8 @@ export const healthAreas = [
 				id: 'temperature',
 				label: 'Body temperature',
 				unit: '°C',
-				metric_code: 'body_temperature'
+				metric_code: 'body_temperature',
+				indicator: 'temperature'
 			},
 			{
 				id: 'hydration',
@@ -144,7 +150,8 @@ export const healthAreas = [
 				id: 'fasting-glucose',
 				label: 'Fasting glucose',
 				unit: 'mg/dL',
-				metric_code: 'fasting_glucose'
+				metric_code: 'fasting_glucose',
+				indicator: 'blood-glucose'
 			},
 			{
 				id: 'symptoms',

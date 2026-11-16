@@ -6,4 +6,9 @@
 	let basePath = $derived('/crew/' + data.astronaut.id);
 </script>
 
-<HealthAreaOverview areaId="general" {basePath} snapshots={data.snapshots} />
+<HealthAreaOverview
+	areaId="general"
+	{basePath}
+	snapshots={data.snapshots}
+	toneByMetric={data.tones}
+/>

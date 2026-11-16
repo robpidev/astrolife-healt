@@ -1,4 +1,6 @@
 import type { StatementSync } from 'node:sqlite';
+import { healthAreas } from '#lib/data/healthAreas.js';
+import type { HealthAreaId } from '#lib/interfaces/health-area.js';
 import {
 	assessHealthIndicator,
 	type HealthIndicatorId,
@@ -160,6 +162,34 @@ export function getAstronautHealthStatus(profileId: number): AstronautHealthStat
 				);
 
 	return { overall, readings, counts, lastUpdate };
+}
+
+export type AreaTone = 'green' | 'yellow' | 'red' | null;
+
+/**
+ * Card tones for one area, keyed by metric id. Metrics without a clinical
+ * indicator stay `null` so their card keeps the neutral sparkline.
+ */
+export function getAreaTones(profileId: number, areaId: HealthAreaId): Record<string, AreaTone> {
+	const area = healthAreas.find((item) => item.id === areaId);
+	if (!area) return {};
+
+	const severityByIndicator = new Map(
+		getAstronautHealthStatus(profileId).readings.map((reading) => [
+			reading.indicator,
+			reading.assessment.severity
+		])
+	);
+
+	const tones: Record<string, AreaTone> = {};
+	for (const metric of area.metrics) {
+		const indicator = 'indicator' in metric ? metric.indicator : undefined;
+		const severity = indicator ? severityByIndicator.get(indicator) : undefined;
+		tones[metric.id] =
+			severity === 'green' || severity === 'yellow' || severity === 'red' ? severity : null;
+	}
+
+	return tones;
 }
 
 export function getKeyVitals(status: AstronautHealthStatus): LatestReading[] {

@@ -4,9 +4,20 @@
 		unit?: string;
 		label?: string;
 		decimals?: number;
+		tone?: 'green' | 'yellow' | 'red' | null;
 	}
 
-	let { points, unit = '', label = 'Measurement trend', decimals }: Props = $props();
+	let { points, unit = '', label = 'Measurement trend', decimals, tone = null }: Props = $props();
+
+	// SVG attributes cannot use Tailwind classes, so the tones stay as whole hex strings.
+	const toneColors: Record<'green' | 'yellow' | 'red' | 'default', string> = {
+		green: '#2dd4bf',
+		yellow: '#fbbf24',
+		red: '#fb7185',
+		default: '#67e8f9'
+	};
+
+	let strokeColor = $derived(tone ? toneColors[tone] : toneColors.default);
 
 	const formatter = $derived(
 		new Intl.NumberFormat('en-US', {
@@ -66,21 +77,42 @@
 				stroke="#334155"
 				stroke-width="1"
 				stroke-dasharray="4 5"
+				vector-effect="non-scaling-stroke"
 			/>
 			{#if chart.coords.length > 1}
 				<polyline
 					points={chart.line}
 					fill="none"
-					stroke="#67e8f9"
+					stroke={strokeColor}
 					stroke-width="2.5"
 					stroke-linejoin="round"
 					stroke-linecap="round"
+					vector-effect="non-scaling-stroke"
 				/>
 			{/if}
 			{#each chart.coords as point, index (index)}
-				<circle cx={point.x} cy={point.y} r="4" fill="#67e8f9" stroke="#0b1729" stroke-width="2">
+				<line
+					x1={point.x}
+					y1={point.y}
+					x2={point.x}
+					y2={point.y}
+					stroke="#0b1729"
+					stroke-width="12"
+					stroke-linecap="round"
+					vector-effect="non-scaling-stroke"
+				/>
+				<line
+					x1={point.x}
+					y1={point.y}
+					x2={point.x}
+					y2={point.y}
+					stroke={strokeColor}
+					stroke-width="8"
+					stroke-linecap="round"
+					vector-effect="non-scaling-stroke"
+				>
 					<title>{formatter.format(point.value)} {unit}</title>
-				</circle>
+				</line>
 			{/each}
 		</svg>
 		<div class="flex justify-between text-xs text-slate-500">
