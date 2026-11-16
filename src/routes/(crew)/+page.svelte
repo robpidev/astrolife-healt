@@ -138,14 +138,24 @@
 	}
 
 	function handleSelect(astronaut: Astronaut): void {
-		// Selection never opens a profile, including clicks on the active poster.
+		// Clicking the enlarged poster opens its profile; any other poster just
+		// becomes the selected one.
+		if (astronaut.id === selectedId) {
+			openProfile(astronaut);
+			return;
+		}
+
 		selectedId = astronaut.id;
 		announcement = `Selected: ${astronautName(astronaut)}`;
 	}
 
 	function viewSelectedProfile(): void {
 		if (!selected) return;
-		goto(resolve('/(crew)/crew/[id]', { id: String(selected.id) })).catch(() => {
+		openProfile(selected);
+	}
+
+	function openProfile(astronaut: Astronaut): void {
+		goto(resolve('/(crew)/crew/[id]', { id: String(astronaut.id) })).catch(() => {
 			announcement = 'Could not open the astronaut profile.';
 		});
 	}
@@ -318,7 +328,7 @@
 	</main>
 
 	<CrewDock
-		total={crew.length}
+		{crew}
 		index={selectedIndex}
 		{canPrev}
 		{canNext}

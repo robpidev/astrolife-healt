@@ -38,6 +38,7 @@
 	aria-current={focused ? 'true' : undefined}
 	aria-label={`Select ${name}`}
 	onclick={() => onselect(astronaut)}
+	title={focused ? 'Open profile' : 'Select astronaut'}
 	class="poster group relative block aspect-[3/4] w-full shrink-0 overflow-hidden rounded-3xl text-left {focused
 		? 'ring-2 ring-white/80'
 		: 'ring-1 ring-white/10'} focus-visible:ring-2 focus-visible:ring-teal-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950 focus-visible:outline-none"
