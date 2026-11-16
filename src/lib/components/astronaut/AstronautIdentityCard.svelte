@@ -3,9 +3,14 @@
 	import AstronautAvatar from '#lib/components/AstronautAvatar.svelte';
 	import type { Astronaut } from '#lib/interfaces/astronaut.js';
 	import { astronautName } from '#lib/utils/crew.js';
+	import { sharedTransition } from '#lib/services/view-transition.svelte.js';
+	import { astronautAvatarName, astronautNameName } from '#lib/utils/shared-transition.js';
 
 	let { astronaut }: { astronaut: Astronaut } = $props();
 	let name = $derived(astronautName(astronaut));
+	let shared = $derived(sharedTransition.astronautId === astronaut.id);
+	let avatarTransition = $derived(shared ? astronautAvatarName(astronaut.id) : null);
+	let nameTransition = $derived(shared ? astronautNameName(astronaut.id) : null);
 	const statuses = { mision: 'On mission', entrenamiento: 'In training', descanso: 'Resting' };
 	let status = $derived(statuses[astronaut.status]);
 	let medicalHref = $derived(resolve('/(crew)/crew/[id]/medical', { id: String(astronaut.id) }));
@@ -17,10 +22,16 @@
 	aria-label="Astronaut identity"
 >
 	<div class="flex flex-col items-center border-b border-cyan-200/10 px-5 pt-8 pb-6 text-center">
-		<div class="rounded-full border border-cyan-300/40 p-1.5 shadow-[0_0_28px_0_#22d3ee20]">
+		<div
+			class="rounded-full border border-cyan-300/40 p-1.5 shadow-[0_0_28px_0_#22d3ee20]"
+			style:view-transition-name={avatarTransition}
+		>
 			<AstronautAvatar {astronaut} size="xl" />
 		</div>
-		<h2 class="mt-5 text-xl font-semibold tracking-tight text-white">
+		<h2
+			class="mt-5 text-xl font-semibold tracking-tight text-white"
+			style:view-transition-name={nameTransition}
+		>
 			{name}
 		</h2>
 		<p class="mt-1.5 text-sm leading-relaxed text-slate-400">

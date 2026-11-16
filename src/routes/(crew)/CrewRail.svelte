@@ -6,6 +6,7 @@
 	import type { Astronaut } from '#lib/interfaces/astronaut.js';
 	import CrewPoster from './CrewPoster.svelte';
 	import CrewAddCard from './CrewAddCard.svelte';
+	import { sharedTransition } from '#lib/services/view-transition.svelte.js';
 
 	interface Props {
 		crew: Astronaut[];
@@ -141,7 +142,7 @@
 			clearSettle();
 			settleTimer = setTimeout(() => {
 				settleTimer = null;
-				if (!userScrolling || pointerId !== null) return; 
+				if (!userScrolling || pointerId !== null) return;
 				updateSelection();
 				userScrolling = false;
 				const index = nearestIndex();
@@ -150,13 +151,13 @@
 		};
 
 		const onScroll = (): void => {
-			if (!userScrolling) return; 
+			if (!userScrolling) return;
 			updateSelection();
 			settle();
 		};
 
 		const onWheel = (event: WheelEvent): void => {
-			if (event.ctrlKey) return; 
+			if (event.ctrlKey) return;
 			const maxScroll = node.scrollWidth - node.clientWidth;
 			if (maxScroll <= 0) return;
 			const delta = Math.abs(event.deltaX) > Math.abs(event.deltaY) ? event.deltaX : event.deltaY;
@@ -179,7 +180,7 @@
 				userScrolling = true;
 				stopTween();
 				clearSettle();
-				return; 
+				return;
 			}
 			if (event.button !== 0) return;
 			stopTween();
@@ -280,6 +281,7 @@
 								nearness={item.nearness}
 								{reducedMotion}
 								onselect={handlePosterSelect}
+								shared={item.astronaut.id === sharedTransition.astronautId}
 							/>
 						</div>
 					</li>

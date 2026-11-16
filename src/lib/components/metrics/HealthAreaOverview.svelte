@@ -6,6 +6,8 @@
 	import HealthIcon from '#lib/components/astronaut/HealthIcon.svelte';
 	import MetricCard from '#lib/components/metrics/MetricCard.svelte';
 	import SurveySummary from '#lib/components/metrics/SurveySummary.svelte';
+	import { sharedTransition } from '#lib/services/view-transition.svelte.js';
+	import { areaIconName, areaTitleName } from '#lib/utils/shared-transition.js';
 
 	interface Props {
 		areaId: HealthAreaId;
@@ -23,6 +25,7 @@
 		surveySummary = null
 	}: Props = $props();
 	let area = $derived(healthAreas.find((item) => item.id === areaId)!);
+	let shared = $derived(sharedTransition.areaId === areaId);
 	let snapshotByMetric = $derived(
 		new Map(snapshots.map((snapshot) => [snapshot.metric_id, snapshot]))
 	);
@@ -49,12 +52,18 @@
 
 <div class="space-y-5">
 	<header class="flex flex-wrap items-center gap-3 border-b border-cyan-200/10 pb-4">
-		<span class="rounded-lg border border-cyan-300/20 bg-cyan-300/10 p-2.5 text-cyan-200">
+		<span
+			class="rounded-lg border border-cyan-300/20 bg-cyan-300/10 p-2.5 text-cyan-200"
+			style:view-transition-name={shared ? areaIconName(areaId) : null}
+		>
 			<HealthIcon name={area.id} />
 		</span>
 		<div class="min-w-0 flex-1">
 			<p class="mb-1 text-xs tracking-[0.18em] text-slate-500 uppercase">Health area</p>
-			<h2 class="text-xl font-semibold tracking-tight break-words text-white sm:text-2xl">
+			<h2
+				class="text-xl font-semibold tracking-tight break-words text-white sm:text-2xl"
+				style:view-transition-name={shared ? areaTitleName(areaId) : null}
+			>
 				{area.label}
 			</h2>
 		</div>

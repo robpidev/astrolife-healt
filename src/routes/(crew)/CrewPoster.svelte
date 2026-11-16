@@ -3,6 +3,7 @@
 	import AstronautAvatar from '#lib/components/AstronautAvatar.svelte';
 	import { astronautName, crewTaskProgress, levelProgress, xpSegments } from '#lib/utils/crew.js';
 	import { crewStatuses, crewTones } from '#lib/utils/crew-theme.js';
+	import { astronautAvatarName, astronautNameName } from '#lib/utils/shared-transition.js';
 
 	interface Props {
 		astronaut: Astronaut;
@@ -10,8 +11,9 @@
 		nearness: number;
 		reducedMotion: boolean;
 		onselect: (astronaut: Astronaut) => void;
+		shared?: boolean;
 	}
-	let { astronaut, focused, nearness, reducedMotion, onselect }: Props = $props();
+	let { astronaut, focused, nearness, reducedMotion, onselect, shared = false }: Props = $props();
 	const numberFormat = new Intl.NumberFormat('en', { useGrouping: 'always' });
 	const XP_CELLS = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
 	let showDetails = $derived(nearness > 0.45);
@@ -29,6 +31,8 @@
 			: `${astronaut.streak_days} ${astronaut.streak_days === 1 ? 'day' : 'days'}`
 	);
 	let pendingLabel = $derived(progress.pending === 1 ? '1 pending' : `${progress.pending} pending`);
+	let avatarTransition = $derived(shared ? astronautAvatarName(astronaut.id) : null);
+	let nameTransition = $derived(shared ? astronautNameName(astronaut.id) : null);
 </script>
 
 <button
@@ -66,18 +70,23 @@
 		class="pointer-events-none absolute inset-x-0 top-1/2 grid -translate-y-1/2 place-items-center"
 		aria-hidden="true"
 	>
-		<AstronautAvatar
-			{astronaut}
-			class="size-[46cqw]"
-			ringClass="ring-[0.9cqw]"
-			textClass="text-[13cqw]"
-		/>
+		<span class="inline-block" style:view-transition-name={avatarTransition}>
+			<AstronautAvatar
+				{astronaut}
+				class="size-[46cqw]"
+				ringClass="ring-[0.9cqw]"
+				textClass="text-[13cqw]"
+			/>
+		</span>
 	</span>
 
 	<span
 		class="absolute inset-x-0 bottom-0 z-10 block bg-linear-to-t from-slate-950 via-slate-950/85 to-transparent p-[4cqw] pt-[16cqw]"
 	>
-		<span class="block truncate text-[9cqw] font-semibold text-white">{name}</span>
+		<span
+			class="block truncate text-[9cqw] font-semibold text-white"
+			style:view-transition-name={nameTransition}>{name}</span
+		>
 
 		<span class="mt-[1cqw] block truncate text-[4.5cqw] text-slate-300 {detailMotion} {detailState}"
 			>{astronaut.role}</span

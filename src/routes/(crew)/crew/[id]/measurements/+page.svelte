@@ -1,6 +1,8 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
 	import HealthIcon from '#lib/components/astronaut/HealthIcon.svelte';
+	import { sharedTransition } from '#lib/services/view-transition.svelte.js';
+	import { areaIconName, areaTitleName } from '#lib/utils/shared-transition.js';
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
@@ -22,13 +24,17 @@
 
 	<ul class="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
 		{#each data.areas as area (area.id)}
+			{@const shared = area.id === sharedTransition.areaId}
 			<li>
 				<a
 					href={resolve(`${basePath}/measurements/${area.id}`.slice(1) as `crew/${string}`)}
 					class="group flex h-full flex-col rounded-2xl border border-cyan-200/15 bg-[#0b1b2e] p-5 transition-colors hover:border-cyan-300/40 hover:bg-[#0d2137] focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-cyan-300"
 				>
 					<div class="flex items-start justify-between gap-3">
-						<span class="rounded-lg border border-cyan-300/20 bg-cyan-300/10 p-2.5 text-cyan-200">
+						<span
+							class="rounded-lg border border-cyan-300/20 bg-cyan-300/10 p-2.5 text-cyan-200"
+							style:view-transition-name={shared ? areaIconName(area.id) : null}
+						>
 							<HealthIcon name={area.id} />
 						</span>
 						<span
@@ -37,7 +43,12 @@
 							{area.recorded}/{area.total}
 						</span>
 					</div>
-					<h2 class="mt-4 text-lg font-semibold text-white">{area.label}</h2>
+					<h2
+						class="mt-4 text-lg font-semibold text-white"
+						style:view-transition-name={shared ? areaTitleName(area.id) : null}
+					>
+						{area.label}
+					</h2>
 					<p class="mt-1 text-sm text-slate-400">
 						{area.recorded === 0
 							? 'No indicators recorded yet.'
