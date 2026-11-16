@@ -8,19 +8,18 @@ escalates early warnings to the crew and to the flight surgeons on the ground.
 It was built for **NASA Space Apps Challenge Piura 2026 — Challenge 4: create
 health-monitoring software for astronauts on space missions.**
 
-> **All data in this repository is synthetic.** The six crew members, their
-> measurements, alerts and history are fictional seed data generated for the
-> demo; no real astronaut or patient data is included. The crew portraits in
-> `static/images/astronauts/` are **AI-generated images** of fictional people
-> (the prompts are kept in `portraits-prompts.json`), and they are not
-> photographs of any real person.
+> **Demo content, not medical records.** All crew data is synthetic test data
+> and the crew portraits are AI-generated images. See
+> [Demo data and AI-generated assets](#demo-data-and-ai-generated-assets).
 
 ![Crew roster](docs/screenshots/01-crew-roster.png)
 
 ## Contents
 
+- [Demo data and AI-generated assets](#demo-data-and-ai-generated-assets)
 - [The challenge](#the-challenge)
 - [What Astrolife does](#what-astrolife-does)
+- [Guided demo](#guided-demo)
 - [Screenshots](#screenshots)
 - [Architecture](#architecture)
 - [Tech stack](#tech-stack)
@@ -29,6 +28,31 @@ health-monitoring software for astronauts on space missions.**
 - [Build and distribution](#build-and-distribution)
 - [Built with OpenCode](#built-with-opencode)
 - [Team](#team)
+
+## Demo data and AI-generated assets
+
+Nothing in this repository comes from a real astronaut or a real patient. The
+app is a hackathon prototype and every number you see is **generated test
+data**.
+
+**Crew data.** The six crew members (`Valentina Ríos`, `Mateo Ferrer`,
+`Aiko Tanaka`, `Samuel Duarte`, `Camila Sosa`, `Amara Okafor`) are fictional.
+Their identities, measurements, alerts, radiation doses and medical notes are
+seeded for the demo: on an empty database `src/lib/server/crew-seed.ts` writes
+the roster and `bd.sql` ships the metric definitions, and the trend history is
+produced with `scripts/seed-cardiovascular-demo.*`. The guided demo goes one
+step further and serves a frozen snapshot from
+`src/lib/demo/mock-data.json` instead of the database. None of these values are
+clinically validated; the reference ranges and thresholds come from the
+team's research in the project brief, not from a medical device.
+
+**Crew portraits.** The six photographs in `static/images/astronauts/` are
+**AI-generated images** of fictional people, created with an image model from
+the prompts kept in `portraits-prompts.json`. They do not depict real
+individuals — each prompt explicitly states "not a real public figure".
+
+**Screenshots.** Every capture in `docs/screenshots/` is a real screenshot of
+this application running, so it shows the seeded demo crew and not real data.
 
 ## The challenge
 
@@ -46,7 +70,7 @@ ranges, and produces graded warnings instead of raw numbers.
 
 ## What Astrolife does
 
-### A tour of the app
+### Walking through the app
 
 **Crew roster (`/`)** — the control centre. The fleet health banner summarises
 the whole crew (critical / caution), and each card shows the astronaut's level,
@@ -105,6 +129,10 @@ vessels) that reacts to the crew's own data: the brain changes colour and glow
 with the latest stress and fatigue, the heartbeat follows the latest heart rate,
 and the figure can be dragged or rotated from the keyboard.
 
+**Guided demo** — opening the app with `?demo=1` switches to a read-only mock
+crew and starts a Driver.js walkthrough that highlights each of these screens in
+order. See [Guided demo](#guided-demo).
+
 ### Module coverage
 
 The project brief defines twelve modules. This is what the application actually
@@ -128,6 +156,48 @@ implements today:
 Beyond the brief, the radiation area models career effective dose, daily
 galactic cosmic ray (GCR) exposure, solar particle events (SPE) and organ dose
 against mission limit profiles.
+
+## Guided demo
+
+The app ships with a **guided tour built on [Driver.js](https://driverjs.com)**,
+so a visitor can be walked through the product without reading anything first.
+
+Open any route with `?demo=1`:
+
+```text
+http://localhost:5173/?demo=1
+```
+
+That does three things:
+
+1. `hooks.server.ts` sets the `astrolife-demo` cookie, so the session stays in
+   demo mode across navigation and reloads (8 hours).
+2. The server loads a frozen snapshot from `src/lib/demo/mock-data.json`
+   instead of querying SQLite, and the demo is **read-only**: any non-GET
+   request is rejected with `403`, so a stray form submit can never touch the
+   real database.
+3. `src/lib/demo/tour.ts` starts the Driver.js tour at the step that belongs to
+   the current route.
+
+![Guided demo](docs/screenshots/18-guided-demo.png)
+
+The tour has **16 steps** that cross real routes — roster, astronaut summary,
+measurements, cardiovascular, heart rate, radiation and the medical dossier —
+and mixes explanatory popovers with action steps that wait for the visitor to
+click the highlighted control (`advanceOn: 'click' | 'submit'`). It navigates
+with `goto`, waits for each target element, saves its position in
+`sessionStorage` so a full page load resumes where it stopped, offers a _Skip_
+button, honours `prefers-reduced-motion`, and ends with a _Try the app_ button
+that opens this repository.
+
+A floating **demo toolbar** (bottom right) exposes _Start tour_, _Reset demo_
+and _Exit demo_. Resetting clears the client-side deltas and returns to the
+roster; exiting drops the cookie and reloads against the real database.
+
+For a static demo deployment, set `PUBLIC_DEMO_MODE=true` at build time and the
+whole app runs in demo mode without the query parameter. Driver.js and the tour
+are imported lazily, so the production bundle only loads them when the demo is
+actually active.
 
 ## Screenshots
 
@@ -166,6 +236,7 @@ src/
 │   ├── components/             # shared UI (health, metrics, astronaut, medical)
 │   │   └── astronaut/anatomy/  # Three.js scene: skin, skeleton, organs
 │   ├── data/                   # health areas and indicator definitions
+│   ├── demo/                   # demo snapshot, Driver.js tour and toolbar
 │   ├── interfaces/             # domain types, one file per entity
 │   ├── server/                 # server-only: db, validation, queries, rules
 │   ├── services/               # client-side view transitions
@@ -191,6 +262,11 @@ Navigation-style outcomes use `redirect(303, ...)`.
 `src/lib/utils` and `src/lib/interfaces` stay environment-agnostic, which is
 why the domain logic is unit-testable without a browser or a running server.
 
+**Demo boundary.** `hooks.server.ts` marks a request as demo, and from that
+point every `load` resolves against `src/lib/demo/mock-data.json` instead of
+the database while non-GET requests are refused. The real stores are never
+opened during a demo session.
+
 **Health pipeline.** `measurements` → per-metric reference ranges and
 `health_baselines` → `alerts` (rule evaluation) → `risks` (aggregation across
 areas) → `recommendations` (countermeasures) → `ground_messages` (queue for the
@@ -206,6 +282,7 @@ ground link). Each stage is a separate module with its own tests.
 | Styles    | Tailwind CSS 4 + `forms` and `typography` plugins                              |
 | Database  | SQLite via `node:sqlite` (`DatabaseSync`), schema in `bd.sql`                  |
 | 3D        | Three.js 0.187 (WebGL scene, no React wrapper)                                 |
+| Tour      | Driver.js 1.14 (guided product tour, lazily imported)                          |
 | Tests     | Vitest, node environment, colocated `*.test.ts`                                |
 | Quality   | ESLint + Prettier, `svelte-check`                                              |
 | Runtime   | Bun 1.4 (dev, build, tests and the self-hosted server)                         |
@@ -242,6 +319,9 @@ Bun is what the project is built and tested with).
 bun install
 bun run dev          # http://localhost:5173
 ```
+
+To see the app with the guided tour, open `http://localhost:5173/?demo=1`; the
+[guided demo](#guided-demo) serves mock data and never writes to SQLite.
 
 The database is created lazily at `data/astrolife.db` on the first query, and
 six fictional crew members are seeded once. Set `DATABASE_PATH` to point at a
@@ -320,7 +400,8 @@ The workspace configuration is committed in `.opencode/`:
 
 Concretely, the agent wrote the schema and migrations, the query and validation
 modules with their Vitest suites, the Svelte 5 components, the Three.js anatomy
-scene, this deployment setup and this document. Every change was verified with
+scene, the Driver.js tour and demo snapshot, this deployment setup and this
+document. Every change was verified with
 `bun run check`, lint, the test suite and a smoke test of the affected flow
 before being committed.
 
