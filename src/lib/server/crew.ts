@@ -152,8 +152,11 @@ function initializeCrew(): void {
 			}
 			db.prepare('INSERT INTO app_migrations(name) VALUES(?)').run('demo-baselines-v1');
 		}
-		// Astronauts imported from bd.sql also receive a dashboard profile.
-		db.exec('INSERT OR IGNORE INTO crew_profiles(astronaut_id) SELECT id FROM astronauts');
+		// Astronauts imported from bd.sql also receive a dashboard profile. The
+		// role is explicit so databases created before the English default still
+		// get the translated label.
+		db.exec(`INSERT OR IGNORE INTO crew_profiles(astronaut_id, role)
+			SELECT id, 'Mission Specialist' FROM astronauts`);
 		db.exec('COMMIT');
 	} catch (error) {
 		db.exec('ROLLBACK');

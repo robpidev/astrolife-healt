@@ -107,28 +107,28 @@ CREATE TABLE IF NOT EXISTS alerts (
 
 
 INSERT OR IGNORE INTO metric_definitions(code,category,label,unit,value_kind,min_allowed,max_allowed) VALUES
-('heart_rate','cardiovascular','Frecuencia cardíaca','bpm','numeric',0,NULL),
-('blood_pressure','cardiovascular','Presión arterial','mmHg','composite',NULL,NULL),
-('spo2','cardiovascular','Saturación de oxígeno','%','numeric',0,100),
-('sleep_duration','sleep','Duración de sueño','h','numeric',0,24),
-('sleep_quality','sleep','Calidad del sueño','1-5','numeric',1,5),
-('fatigue','sleep','Fatiga','0-10','numeric',0,10),
-('muscle_strength','muscular','Fuerza muscular','N','numeric',0,NULL),
-('muscle_pain','muscular','Dolor muscular','0-10','numeric',0,10),
-('stress','mental','Estrés percibido','0-10','numeric',0,10),
-('mood','mental','Estado de ánimo','1-5','numeric',1,5),
-('reaction_time','mental','Tiempo de reacción','ms','numeric',0,NULL),
-('cognitive_accuracy','mental','Aciertos en prueba cognitiva','%','numeric',0,100),
-('radiation_interval','radiation','Dosis de radiación del intervalo','mSv','numeric',0,NULL),
+('heart_rate','cardiovascular','Heart rate','bpm','numeric',0,NULL),
+('blood_pressure','cardiovascular','Blood pressure','mmHg','composite',NULL,NULL),
+('spo2','cardiovascular','Oxygen saturation','%','numeric',0,100),
+('sleep_duration','sleep','Sleep duration','h','numeric',0,24),
+('sleep_quality','sleep','Sleep quality','1-5','numeric',1,5),
+('fatigue','sleep','Fatigue','0-10','numeric',0,10),
+('muscle_strength','muscular','Muscle strength','N','numeric',0,NULL),
+('muscle_pain','muscular','Muscle pain','0-10','numeric',0,10),
+('stress','mental','Perceived stress','0-10','numeric',0,10),
+('mood','mental','Mood','1-5','numeric',1,5),
+('reaction_time','mental','Reaction time','ms','numeric',0,NULL),
+('cognitive_accuracy','mental','Cognitive test accuracy','%','numeric',0,100),
+('radiation_interval','radiation','Interval radiation dose','mSv','numeric',0,NULL),
 -- Organ doses ride in measurement_components with component_code in
 -- ('lens','skin','bfo','cns'), so one dosimetry snapshot can carry several organs.
 ('radiation_organ','radiation','Organ radiation dose','mGy-Eq','numeric',0,5000),
 -- One row per event segment; the event itself opens with a zero row used as the
 -- boundary between events when summing.
 ('radiation_spe_event','radiation','Solar particle event dose','mSv','numeric',0,1000),
-('body_temperature','general','Temperatura corporal','°C','numeric',NULL,NULL),
-('water_intake','general','Ingesta de agua','mL','numeric',0,NULL),
-('body_mass','general','Masa corporal','kg','numeric',0,NULL),
+('body_temperature','general','Body temperature','°C','numeric',NULL,NULL),
+('water_intake','general','Water intake','mL','numeric',0,NULL),
+('body_mass','general','Body mass','kg','numeric',0,NULL),
 ('fasting_glucose','general','Fasting glucose','mg/dL','numeric',0,NULL),
 ('respiratory_rate','cardiovascular','Respiratory rate','breaths/min','numeric',0,NULL);
 
@@ -161,7 +161,7 @@ CREATE INDEX IF NOT EXISTS idx_mental_survey_responses_session ON mental_survey_
 CREATE TABLE IF NOT EXISTS crew_profiles (
  id INTEGER PRIMARY KEY AUTOINCREMENT,
  astronaut_id TEXT NOT NULL UNIQUE REFERENCES astronauts(id) ON DELETE CASCADE,
- role TEXT NOT NULL DEFAULT 'Especialista de misión',
+ role TEXT NOT NULL DEFAULT 'Mission Specialist',
  status TEXT NOT NULL DEFAULT 'entrenamiento' CHECK(status IN ('mision','entrenamiento','descanso')),
  tone TEXT NOT NULL DEFAULT 'indigo' CHECK(tone IN ('indigo','cyan','violet','amber','emerald')),
  xp_total INTEGER NOT NULL DEFAULT 0 CHECK(xp_total >= 0),

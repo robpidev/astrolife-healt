@@ -5,7 +5,7 @@
 
 	let { children }: LayoutProps = $props();
 
-	let onMeasurements = $derived(page.url.pathname.startsWith('/mediciones'));
+	let onMeasurements = $derived(page.url.pathname.startsWith('/measurements'));
 </script>
 
 <div class="flex min-h-screen flex-col bg-slate-50 text-slate-900 antialiased">
@@ -52,7 +52,7 @@
 					</li>
 					<li>
 						<a
-							href={resolve('/(app)/mediciones')}
+							href={resolve('/(app)/measurements')}
 							aria-current={onMeasurements ? 'page' : undefined}
 							class="inline-flex min-h-11 items-center rounded-lg px-3 text-sm font-medium transition focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 focus-visible:outline-none {onMeasurements
 								? 'bg-teal-50 text-teal-700'

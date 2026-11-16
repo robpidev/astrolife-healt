@@ -259,7 +259,7 @@ src/
     │   ├── +page.svelte        #   /            crew roster
     │   └── crew/[id]/          #   summary, measurements, alerts, risks,
     │                           #   recommendations, history, medical
-    └── (app)/mediciones/       # legacy personal measurement form
+    └── (app)/measurements/     # legacy personal measurement form
 ```
 
 **Request flow.** A route's `+page.server.ts` `load` calls a query module under

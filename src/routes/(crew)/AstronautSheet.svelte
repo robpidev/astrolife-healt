@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { enhance } from '$app/forms';
+	import { enhance } from '#lib/forms/enhance.js';
 	import type { SubmitFunction } from '$app/forms';
 	import { invalidateAll } from '$app/navigation';
 	import { browser } from '$app/env';
@@ -354,7 +354,7 @@
 					</button>
 
 					<a
-						href={resolve('/(app)/mediciones')}
+						href={resolve('/(app)/measurements')}
 						class="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl bg-teal-500 px-4 text-sm font-semibold text-slate-950 transition hover:bg-teal-400 focus-visible:ring-2 focus-visible:ring-teal-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950 focus-visible:outline-none"
 					>
 						View health history
