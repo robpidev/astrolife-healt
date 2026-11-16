@@ -379,16 +379,24 @@ bun run start        # serves build/ with Bun on http://localhost:3000
 To ship it as a container:
 
 ```sh
-docker build -t astrolife .
-docker run -p 3000:3000 -v astrolife-data:/app/data astrolife
-# or
-docker compose up --build
+docker compose up --build -d   # http://localhost:3200
+docker compose logs -f         # follow the server log
+docker compose down            # stop it
 ```
 
-The image is built with Bun, runs the standalone server with Bun, keeps the
-database in the `/app/data` volume, and listens on port 3000. Environment
-variables: `PORT`, `HOST`, `ORIGIN`, `DATABASE_PATH` and `BODY_SIZE_LIMIT`
-(raised to 4 MB because crew photos are stored as data URLs).
+The compose file publishes the container's port 3000 on host port **3200**, so
+it does not collide with `bun run dev` on 3000. It bind-mounts `./data` into
+`/app/data`, which means the container uses the same SQLite database as the
+local build; swap that line for `astrolife-data:/app/data` to start from an
+empty database instead.
+
+The image is built with Bun, runs the standalone server with Bun, and listens on
+port 3000 inside the container. Environment variables: `PORT`, `HOST`, `ORIGIN`,
+`DATABASE_PATH` and `BODY_SIZE_LIMIT` (raised to 4 MB because crew photos are
+stored as data URLs). `ORIGIN` must match the URL opened in the browser, or form
+actions fail the origin check.
+
+The demo works in the container too: <http://localhost:3200/?demo=1>.
 
 ### Static demo (no server)
 

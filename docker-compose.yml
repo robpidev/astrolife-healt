@@ -2,17 +2,25 @@ services:
   astrolife:
     build: .
     image: astrolife:latest
+    container_name: astrolife
+    # 3200 on the host: 3000 is usually taken by the local dev server.
     ports:
-      - '3000:3000'
+      - '3200:3000'
     environment:
-      ORIGIN: http://localhost:3000
+      # Must match the URL opened in the browser, or form actions fail the
+      # origin check.
+      ORIGIN: http://localhost:3200
       # Astronaut photos are stored as data URLs, so the default 512 KB body
       # limit would reject a 2 MB upload.
       BODY_SIZE_LIMIT: 4M
     volumes:
-      # The SQLite file lives here; the volume keeps the crew between restarts.
-      - astrolife-data:/app/data
+      # Bind mount so the container uses the existing crew database in ./data.
+      # Swap for `astrolife-data:/app/data` to start from an empty database.
+      - ./data:/app/data
+    init: true
     restart: unless-stopped
+    # adapter-node drains in-flight requests for up to 30s on SIGTERM.
+    stop_grace_period: 30s
 
 volumes:
   astrolife-data:

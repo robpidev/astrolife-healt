@@ -1,14 +1,18 @@
-node_modules
-.svelte-kit
-.vercel
-.netlify
-.wrangler
-build
-data
-docs
-.git
-.github
-.vscode
-.env
-.env.*
+# Root-only paths: the leading slash keeps `src/lib/data` and similar folders
+# inside the build context.
+/node_modules
+/.svelte-kit
+/.vercel
+/.netlify
+/.wrangler
+/.demo
+/build
+/data
+/docs
+/.git
+/.github
+/.vscode
+/.opencode
+/.env
+/.env.*
 *.log
