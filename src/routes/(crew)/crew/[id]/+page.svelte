@@ -11,4 +11,10 @@
 </svelte:head>
 
 <h1 class="sr-only">Astronaut health summary</h1>
-<HealthSummaryHud status={data.status} vitals={data.vitals} alerts={data.alerts} {basePath} />
+<HealthSummaryHud
+	status={data.status}
+	vitals={data.vitals}
+	alerts={data.alerts}
+	{basePath}
+	trends={data.trends}
+/>

@@ -3,7 +3,7 @@ import { beforeEach, describe, expect, it } from 'vitest';
 process.env.DATABASE_PATH = ':memory:';
 
 const { getDb } = await import('#lib/server/db.js');
-const { getAreaSnapshots } = await import('#lib/server/health-metrics.js');
+const { getAreaSnapshots, getIndicatorTrends } = await import('#lib/server/health-metrics.js');
 
 const db = getDb();
 
@@ -175,5 +175,27 @@ describe('getAreaSnapshots', () => {
 			general.every((snapshot) => snapshot.display === null && snapshot.points.length === 0)
 		).toBe(true);
 		expect(missing.every((snapshot) => snapshot.display === null)).toBe(true);
+	});
+});
+
+describe('getIndicatorTrends', () => {
+	beforeEach(reset);
+
+	it('returns the recent series for each requested indicator', () => {
+		insertMeasurement.run('hr1', 'heart_rate', 68, '2026-11-01');
+		insertMeasurement.run('hr2', 'heart_rate', 74, '2026-11-02');
+		insertMeasurement.run('t1', 'body_temperature', 36.6, '2026-11-01');
+
+		const trends = getIndicatorTrends(10, ['heart-rate', 'temperature', 'spo2']);
+
+		expect(trends['heart-rate']).toEqual([68, 74]);
+		expect(trends.temperature).toEqual([36.6]);
+		expect(trends.spo2).toEqual([]);
+	});
+
+	it('returns empty series for a profile without readings', () => {
+		const trends = getIndicatorTrends(999, ['heart-rate']);
+
+		expect(trends['heart-rate']).toEqual([]);
 	});
 });

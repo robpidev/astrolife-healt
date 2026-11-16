@@ -7,6 +7,7 @@ import type {
 	MetricReading,
 	MetricSnapshot
 } from '#lib/interfaces/health-area.js';
+import type { HealthIndicatorId } from '#lib/utils/health-assessment.js';
 import { getDb } from '#lib/server/db.js';
 
 /** Cards only need the shape of the recent trend, not the full history. */
@@ -212,6 +213,37 @@ export function getAreaSnapshots(profileId: number, areaId: HealthAreaId): Metri
 
 		return measurementSnapshot(metric, astronautId);
 	});
+}
+
+/**
+ * Recent series for the requested indicators, keyed by indicator id. The
+ * summary reuses the same 12-point window as the area cards.
+ */
+export function getIndicatorTrends(
+	profileId: number,
+	indicators: readonly HealthIndicatorId[]
+): Record<string, number[]> {
+	const wanted = new Set(indicators);
+	const trends: Record<string, number[]> = Object.fromEntries(
+		indicators.map((indicator) => [indicator, []])
+	);
+
+	for (const area of healthAreas) {
+		const metrics = area.metrics.filter(
+			(metric) =>
+				'indicator' in metric && metric.indicator !== undefined && wanted.has(metric.indicator)
+		);
+		if (metrics.length === 0) continue;
+
+		const snapshots = getAreaSnapshots(profileId, area.id);
+		for (const metric of metrics) {
+			if (!('indicator' in metric) || metric.indicator === undefined) continue;
+			trends[metric.indicator] =
+				snapshots.find((snapshot) => snapshot.metric_id === metric.id)?.points ?? [];
+		}
+	}
+
+	return trends;
 }
 
 export interface OrganReadingEntry {

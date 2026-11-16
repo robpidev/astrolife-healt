@@ -1,5 +1,7 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
+	import Sparkline from '#lib/components/metrics/Sparkline.svelte';
+	import { healthAreas } from '#lib/data/healthAreas.js';
 	import type {
 		AstronautHealthStatus,
 		HealthAlert,
@@ -12,14 +14,27 @@
 		vitals: LatestReading[];
 		alerts: HealthAlert[];
 		basePath: string;
+		trends: Readonly<Record<string, number[]>>;
 	}
 
-	let { status, vitals, alerts, basePath }: Props = $props();
+	let { status, vitals, alerts, basePath, trends }: Props = $props();
 
 	let visibleVitals = $derived(vitals.slice(0, 4));
 	let openAlerts = $derived(alerts.filter((alert) => !alert.acknowledged).slice(0, 2));
 	let alertsHref = $derived(resolve(`${basePath.slice(1)}/alerts` as `crew/${string}`));
 	let measurementsHref = $derived(resolve(`${basePath.slice(1)}/measurements` as `crew/${string}`));
+
+	// Cards link to the detail page of the metric that owns their indicator.
+	let measurementPaths = $derived.by(() => {
+		const paths: Record<string, string> = {};
+		for (const area of healthAreas) {
+			for (const metric of area.metrics) {
+				const indicator = 'indicator' in metric ? metric.indicator : undefined;
+				if (indicator) paths[indicator] = `${basePath}/measurements/${area.id}/${metric.id}`;
+			}
+		}
+		return paths;
+	});
 
 	let overallLabel = $derived.by(() => {
 		switch (status.overall) {
@@ -63,6 +78,10 @@
 				return 'border-slate-400/20 bg-slate-400/10 text-slate-300';
 		}
 	}
+
+	function toneFor(severity: HealthSeverity): 'green' | 'yellow' | 'red' | null {
+		return severity === 'unknown' ? null : severity;
+	}
 </script>
 
 <div class="space-y-6">
@@ -86,10 +105,23 @@
 
 	<div class="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
 		{#each visibleVitals as vital (vital.reading_id)}
-			<article class="rounded-xl border border-cyan-200/15 bg-[#0b1b2e] p-4">
-				<p class="text-[11px] font-semibold tracking-[0.14em] text-slate-400 uppercase">
-					{indicatorName(vital.indicator)}
-				</p>
+			{@const vitalHref = resolve(
+				(measurementPaths[vital.indicator] ?? measurementsHref).slice(1) as `crew/${string}`
+			)}
+			<a
+				href={vitalHref}
+				class="group block rounded-xl border border-cyan-200/15 bg-[#0b1b2e] p-4 transition-colors hover:border-cyan-300/40 hover:bg-[#0d2137] focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-cyan-300"
+			>
+				<div class="flex items-start justify-between gap-2">
+					<p class="text-[11px] font-semibold tracking-[0.14em] text-slate-400 uppercase">
+						{indicatorName(vital.indicator)}
+					</p>
+					<span
+						aria-hidden="true"
+						class="text-sm text-slate-500 transition-transform group-hover:translate-x-0.5 group-hover:text-cyan-200"
+						>→</span
+					>
+				</div>
 				<p class="mt-3 flex flex-wrap items-baseline gap-1">
 					<span class="text-2xl font-light tracking-tight text-cyan-100">{vital.display}</span>
 					{#if vital.unit}
@@ -103,7 +135,14 @@
 					></span>
 					{vital.assessment.label}
 				</p>
-			</article>
+				<div class="mt-3">
+					<Sparkline
+						points={trends[vital.indicator] ?? []}
+						tone={toneFor(vital.assessment.severity)}
+					/>
+				</div>
+				<span class="sr-only">View measurement</span>
+			</a>
 		{:else}
 			<p
 				class="rounded-xl border border-dashed border-cyan-200/15 p-4 text-sm text-slate-500 sm:col-span-2 xl:col-span-4"
