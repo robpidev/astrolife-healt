@@ -1,15 +1,17 @@
-import { getAreaSnapshots } from '#lib/server/health-metrics.js';
-import { createRegisterAction } from '#lib/server/cardiovascular-action.js';
+import { getMetricReadings } from '#lib/server/health-metrics.js';
+import {
+	createRegisterAction,
+	getCardiovascularEntryConfig
+} from '#lib/server/cardiovascular-action.js';
 import type { Actions, PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ parent }) => {
 	const { astronaut } = await parent();
-	const snapshot =
-		getAreaSnapshots(astronaut.id, 'cardiovascular').find(
-			(item) => item.metric_id === 'heart-rate'
-		) ?? null;
 
-	return { snapshot };
+	return {
+		readings: getMetricReadings(astronaut.id, 'cardiovascular', 'heart-rate', 30),
+		entry: getCardiovascularEntryConfig('heart-rate')
+	};
 };
 
 export const actions: Actions = {

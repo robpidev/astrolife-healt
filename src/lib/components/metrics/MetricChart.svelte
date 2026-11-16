@@ -1,33 +1,97 @@
 <script lang="ts">
-	let { title = 'Measurement trend' }: { title?: string } = $props();
+	interface Props {
+		points: readonly number[];
+		unit?: string;
+		label?: string;
+		decimals?: number;
+	}
+
+	let { points, unit = '', label = 'Measurement trend', decimals }: Props = $props();
+
+	const formatter = $derived(
+		new Intl.NumberFormat('en-US', {
+			minimumFractionDigits: decimals ?? 0,
+			maximumFractionDigits: decimals ?? 1
+		})
+	);
+
+	let chart = $derived.by(() => {
+		if (points.length === 0) return null;
+
+		const low = Math.min(...points);
+		const high = Math.max(...points);
+		const span = high - low || 1;
+		const top = 18;
+		const bottom = 122;
+		const left = 24;
+		const right = 404;
+
+		const coords = points.map((value, index) => ({
+			value,
+			x:
+				left +
+				(points.length === 1 ? (right - left) / 2 : (index / (points.length - 1)) * (right - left)),
+			y: bottom - ((value - low) / span) * (bottom - top)
+		}));
+
+		return {
+			coords,
+			line: coords.map((point) => `${point.x},${point.y}`).join(' '),
+			low,
+			high
+		};
+	});
 </script>
 
-<section class="rounded-xl border border-cyan-200/10 bg-[#081322] p-4">
+<section class="rounded-xl border border-cyan-200/10 bg-[#081322] p-4" aria-label={label}>
 	<div class="flex flex-wrap items-center justify-between gap-3">
-		<h3 class="text-xs font-medium text-slate-200">
-			{title}
-		</h3>
+		<h2 class="text-xs font-medium text-slate-200">{label}</h2>
 		<span class="rounded-md border border-white/10 px-2 py-1 text-xs text-slate-500">
-			No records
+			{points.length}
+			{points.length === 1 ? 'reading' : 'readings'}
 		</span>
 	</div>
-	<div class="relative mt-5">
-		<svg viewBox="0 0 420 150" class="h-36 w-full" preserveAspectRatio="none" aria-hidden="true">
-			<path d="M22 5v125h390" fill="none" stroke="#334155" stroke-opacity="0.5" />
+
+	{#if chart}
+		<svg
+			viewBox="0 0 420 150"
+			class="mt-4 h-36 w-full"
+			preserveAspectRatio="none"
+			role="img"
+			aria-label={`${label}: ${points.length} readings, from ${formatter.format(chart.low)} to ${formatter.format(chart.high)} ${unit}`}
+		>
 			<path
-				d="M22 30h390M22 55h390M22 80h390M22 105h390M80 5v125M145 5v125M210 5v125M275 5v125M340 5v125M405 5v125"
+				d="M24 18H404M24 70H404M24 122H404"
 				fill="none"
-				stroke="#67e8f9"
-				stroke-opacity="0.06"
-				stroke-dasharray="3 4"
+				stroke="#334155"
+				stroke-width="1"
+				stroke-dasharray="4 5"
 			/>
+			{#if chart.coords.length > 1}
+				<polyline
+					points={chart.line}
+					fill="none"
+					stroke="#67e8f9"
+					stroke-width="2.5"
+					stroke-linejoin="round"
+					stroke-linecap="round"
+				/>
+			{/if}
+			{#each chart.coords as point, index (index)}
+				<circle cx={point.x} cy={point.y} r="4" fill="#67e8f9" stroke="#0b1729" stroke-width="2">
+					<title>{formatter.format(point.value)} {unit}</title>
+				</circle>
+			{/each}
 		</svg>
-		<div class="absolute inset-0 flex flex-col items-center justify-center gap-2">
-			<span class="text-xs text-slate-400"> No data to show </span>
-			<span class="text-xs text-slate-600">
-				The trend will appear with the first measurements.
-			</span>
+		<div class="flex justify-between text-xs text-slate-500">
+			<span>Oldest</span>
+			<span>Newest</span>
 		</div>
-	</div>
-	<p class="text-right text-xs text-slate-600">Measurement date</p>
+	{:else}
+		<div
+			class="mt-4 rounded-xl border border-dashed border-white/10 px-4 py-10 text-center text-sm text-slate-400"
+		>
+			The trend will appear after the first reading.
+		</div>
+	{/if}
 </section>

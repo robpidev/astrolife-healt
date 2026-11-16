@@ -150,6 +150,7 @@
 	);
 </script>
 
+<!-- eslint-disable svelte/no-navigation-without-resolve -->
 <svelte:head>
 	<title>Body temperature · Astrolife</title>
 </svelte:head>
@@ -309,8 +310,8 @@
 		<p class="mt-3 text-sm leading-relaxed text-slate-400">
 			Measurements are taken from saved manual or sensor records in SQLite; simulated data is
 			excluded. Indicators without measurements show “No recorded data” rather than example values.
-			Only body temperature currently has an entry form here; other values appear when saved by
-			their own data sources. These are general adult references, not flight-medicine limits.
+			Each indicator has its own entry form; values appear here once they are saved by their own
+			data sources. These are general adult references, not flight-medicine limits.
 		</p>
 		<div class="mt-5 grid gap-3 md:grid-cols-2">
 			{#each comparisons as item (item.id)}

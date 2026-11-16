@@ -1,4 +1,4 @@
-import { getAreaSnapshots } from '#lib/server/health-metrics.js';
+import { getAreaSnapshots, getMetricReadings } from '#lib/server/health-metrics.js';
 import { getTopicProgress } from '#lib/server/mental-survey.js';
 import type { PageServerLoad } from './$types';
 
@@ -10,6 +10,7 @@ export const load: PageServerLoad = async ({ parent, url }) => {
 
 	return {
 		snapshot,
+		readings: getMetricReadings(astronaut.id, 'mental', 'concentration', 30),
 		progress: getTopicProgress(astronaut.id, 'concentration'),
 		saved: url.searchParams.has('saved')
 	};

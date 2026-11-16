@@ -1,11 +1,10 @@
 <script lang="ts">
+	import { resolve } from '$app/paths';
 	import { healthAreas } from '#lib/data/healthAreas.js';
 	import type { HealthAreaId, MetricSnapshot } from '#lib/interfaces/health-area.js';
 	import type { MentalSurveySummary } from '#lib/interfaces/mental-survey.js';
 	import HealthIcon from '#lib/components/astronaut/HealthIcon.svelte';
 	import MetricCard from '#lib/components/metrics/MetricCard.svelte';
-	import MetricChart from '#lib/components/metrics/MetricChart.svelte';
-	import MetricStatistics from '#lib/components/metrics/MetricStatistics.svelte';
 	import SurveySummary from '#lib/components/metrics/SurveySummary.svelte';
 
 	interface Props {
@@ -40,6 +39,11 @@
 		area.metrics.length > 3
 			? 'grid gap-3 sm:grid-cols-2 lg:grid-cols-4'
 			: 'grid gap-3 sm:grid-cols-2 lg:grid-cols-3'
+	);
+	let recordedMetrics = $derived(
+		area.metrics
+			.map((metric) => ({ metric, snapshot: snapshotByMetric.get(metric.id) }))
+			.filter((item) => item.snapshot?.latest != null)
 	);
 </script>
 
@@ -77,15 +81,40 @@
 	{#if areaId === 'mental'}
 		<SurveySummary summary={surveySummary} />
 	{/if}
-	<div class="grid items-start gap-4 2xl:grid-cols-[minmax(0,1fr)_180px]">
-		<MetricChart />
-		<MetricStatistics />
-	</div>
 	<section class="rounded-xl border border-cyan-200/10 bg-cyan-300/[0.03] p-4">
-		<h3 class="text-xs font-medium text-cyan-100">Interpretation</h3>
-		<p class="mt-2 text-sm leading-relaxed text-slate-400">
-			There is not enough data yet to show an interpretation of this area. Record measurements to
-			start tracking.
-		</p>
+		<div class="flex flex-wrap items-center justify-between gap-3">
+			<h3 class="text-xs font-medium text-cyan-100">Recorded indicators</h3>
+			<span class="text-xs text-slate-500">
+				{recordedMetrics.length} of {area.metrics.length}
+			</span>
+		</div>
+		{#if recordedMetrics.length}
+			<p class="mt-2 text-sm leading-relaxed text-slate-400">
+				Latest data from {recordedAt ? recordedAt.slice(0, 10) : 'an unknown date'}. Open an
+				indicator to review its trend and history.
+			</p>
+			<ul class="mt-3 flex flex-wrap gap-2">
+				{#each recordedMetrics as item (item.metric.id)}
+					<li
+						class="rounded-lg border border-cyan-200/15 bg-[#0b1b2e] px-2.5 py-1.5 text-xs text-slate-300"
+					>
+						<span class="text-slate-400">{item.metric.label}:</span>
+						<span class="ml-1 font-medium text-cyan-100 tabular-nums">
+							{item.snapshot?.display}{item.metric.unit ? ` ${item.metric.unit}` : ''}
+						</span>
+					</li>
+				{/each}
+			</ul>
+		{:else}
+			<p class="mt-2 text-sm leading-relaxed text-slate-400">
+				No readings recorded in this area yet. Open an indicator to add the first one.
+			</p>
+		{/if}
+		<a
+			href={resolve(`${basePath}/risks`.slice(1) as `crew/${string}`)}
+			class="mt-4 inline-flex min-h-10 items-center rounded-lg border border-cyan-300/25 px-3 text-xs font-semibold text-cyan-200 transition hover:bg-cyan-300/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-300"
+		>
+			Review threats →
+		</a>
 	</section>
 </div>

@@ -1,4 +1,5 @@
 import { error, fail } from '@sveltejs/kit';
+import type { MetricEntryConfig } from '#lib/interfaces/metric-entry.js';
 import {
 	parseCardiovascularForm,
 	heartRateWarning,
@@ -7,6 +8,76 @@ import {
 	type CardiovascularMetricCode
 } from '#lib/server/cardiovascular-validation.js';
 import { registerCardiovascularReadings } from '#lib/server/cardiovascular.js';
+
+/**
+ * Entry dialog metadata for a cardiovascular detail page. The hidden
+ * `metric_code` keeps the shared dialog compatible with the existing action,
+ * together with the per-page warning logic.
+ */
+export function getCardiovascularEntryConfig(
+	metricId: 'heart-rate' | 'blood-pressure' | 'oxygen'
+): MetricEntryConfig {
+	if (metricId === 'blood-pressure') {
+		return {
+			title: 'Blood pressure',
+			fields: [
+				{
+					name: 'systolic',
+					label: 'Systolic',
+					unit: 'mmHg',
+					min: 40,
+					max: 300,
+					step: '1',
+					integer: true
+				},
+				{
+					name: 'diastolic',
+					label: 'Diastolic',
+					unit: 'mmHg',
+					min: 20,
+					max: 200,
+					step: '1',
+					integer: true
+				}
+			],
+			hidden: { metric_code: 'blood_pressure' }
+		};
+	}
+
+	if (metricId === 'oxygen') {
+		return {
+			title: 'Oxygen',
+			fields: [
+				{
+					name: 'spo2',
+					label: 'Oxygen saturation',
+					unit: '%',
+					min: 0,
+					max: 100,
+					step: '0.1',
+					integer: false
+				}
+			],
+			hidden: { metric_code: 'spo2' }
+		};
+	}
+
+	return {
+		title: 'Heart rate',
+		fields: [
+			{
+				name: 'heart_rate',
+				label: 'Heart rate',
+				unit: 'bpm',
+				min: 20,
+				max: 250,
+				step: '1',
+				integer: true
+			}
+		],
+		hidden: { metric_code: 'heart_rate' }
+	};
+}
 
 function warningFor(input: CardiovascularInput): string | null {
 	switch (input.metric_code) {

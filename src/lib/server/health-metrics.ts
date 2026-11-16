@@ -1,6 +1,11 @@
 import type { StatementSync } from 'node:sqlite';
 import { healthAreas } from '#lib/data/healthAreas.js';
-import type { HealthAreaId, HealthMetric, MetricSnapshot } from '#lib/interfaces/health-area.js';
+import type {
+	HealthAreaId,
+	HealthMetric,
+	MetricReading,
+	MetricSnapshot
+} from '#lib/interfaces/health-area.js';
 import { getDb } from '#lib/server/db.js';
 
 /** Cards only need the shape of the recent trend, not the full history. */
@@ -206,4 +211,113 @@ export function getAreaSnapshots(profileId: number, areaId: HealthAreaId): Metri
 
 		return measurementSnapshot(metric, astronautId);
 	});
+}
+
+interface DatedRow {
+	value: number;
+	measured_at: string;
+	source: string;
+	detail?: string | null;
+}
+
+function scaleReading(metric: HealthMetric, value: number): number {
+	return scaleValue(metric, value);
+}
+
+/** Dated readings for a metric, used by detail charts, statistics and history. */
+export function getMetricReadings(
+	profileId: number,
+	areaId: HealthAreaId,
+	metricId: string,
+	limit = 30
+): MetricReading[] {
+	const area = healthAreas.find((item) => item.id === areaId);
+	const metric: HealthMetric | undefined = area?.metrics.find((item) => item.id === metricId);
+	if (!metric) return [];
+
+	const row = getStatements().astronautId.get(profileId) as unknown as
+		{ astronaut_id: string } | undefined;
+	const astronautId = row?.astronaut_id ?? null;
+	if (!astronautId) return [];
+
+	const capped = Math.min(Math.max(limit, 1), 90);
+
+	if (metric.source === 'symptoms') {
+		const rows = getDb()
+			.prepare(
+				`SELECT intensity AS value, recorded_at AS measured_at, source, symptom_type AS detail
+				 FROM symptom_records WHERE astronaut_id = ?
+				 ORDER BY recorded_at DESC, rowid DESC LIMIT ?`
+			)
+			.all(astronautId, capped) as unknown as DatedRow[];
+		return rows.map((reading) => ({
+			value: scaleReading(metric, reading.value),
+			secondary: null,
+			measured_at: reading.measured_at,
+			source: reading.source,
+			detail: reading.detail ?? null
+		}));
+	}
+
+	if (metric.source === 'exercise') {
+		const rows = getDb()
+			.prepare(
+				`SELECT duration_minutes AS value, started_at AS measured_at, source, exercise_type AS detail
+				 FROM exercise_sessions WHERE astronaut_id = ?
+				 ORDER BY started_at DESC, rowid DESC LIMIT ?`
+			)
+			.all(astronautId, capped) as unknown as DatedRow[];
+		return rows.map((reading) => ({
+			value: scaleReading(metric, reading.value),
+			secondary: null,
+			measured_at: reading.measured_at,
+			source: reading.source,
+			detail: reading.detail ?? null
+		}));
+	}
+
+	if (metric.metric_code === 'blood_pressure') {
+		const rows = getDb()
+			.prepare(
+				`SELECT m.measured_at, m.source,
+				        (SELECT value FROM measurement_components
+				         WHERE measurement_id = m.id AND component_code = 'systolic') AS value,
+				        (SELECT value FROM measurement_components
+				         WHERE measurement_id = m.id AND component_code = 'diastolic') AS secondary
+				 FROM measurements m WHERE m.astronaut_id = ? AND m.metric_code = 'blood_pressure'
+				 ORDER BY m.measured_at DESC, m.rowid DESC LIMIT ?`
+			)
+			.all(astronautId, capped) as unknown as {
+			value: number | null;
+			secondary: number | null;
+			measured_at: string;
+			source: string;
+		}[];
+
+		return rows
+			.filter((reading) => reading.value !== null)
+			.map((reading) => ({
+				value: scaleReading(metric, reading.value as number),
+				secondary: reading.secondary === null ? null : scaleReading(metric, reading.secondary),
+				measured_at: reading.measured_at,
+				source: reading.source,
+				detail: null
+			}));
+	}
+
+	const rows = getDb()
+		.prepare(
+			`SELECT value, measured_at, source FROM measurements
+			 WHERE astronaut_id = ? AND metric_code = ? AND value IS NOT NULL
+			 ORDER BY measured_at DESC, rowid DESC LIMIT ?`
+		)
+		.all(astronautId, metric.metric_code, capped) as unknown as DatedRow[];
+
+	return rows.map((reading) => ({
+		value: scaleReading(metric, reading.value),
+		secondary: null,
+		measured_at: reading.measured_at,
+		source: reading.source,
+		detail: null
+	}));
 }

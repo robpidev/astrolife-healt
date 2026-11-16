@@ -56,7 +56,7 @@ export const healthAreas = [
 			{
 				id: 'pain',
 				label: 'Pain',
-				unit: '',
+				unit: '/10',
 				metric_code: 'muscle_pain'
 			}
 		]
@@ -85,7 +85,7 @@ export const healthAreas = [
 			},
 			{
 				id: 'duration',
-				label: 'Duration',
+				label: 'Sleep duration',
 				unit: 'h',
 				metric_code: 'sleep_duration'
 			},
@@ -142,7 +142,7 @@ export const healthAreas = [
 			{
 				id: 'symptoms',
 				label: 'Symptoms',
-				unit: '',
+				unit: '/10',
 				metric_code: 'symptom_intensity',
 				source: 'symptoms'
 			}

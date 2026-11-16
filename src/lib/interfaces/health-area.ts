@@ -34,3 +34,13 @@ export interface MetricSnapshot {
 	points: number[];
 	recorded_at: string | null;
 }
+
+/** Dated reading for detail charts, statistics and history. */
+export interface MetricReading {
+	value: number;
+	secondary: number | null;
+	measured_at: string;
+	source: string;
+	/** Symptom type or exercise type when the metric stores one. */
+	detail: string | null;
+}

@@ -1,16 +1,14 @@
 <script lang="ts">
-	import MetricCard from '#lib/components/metrics/MetricCard.svelte';
-	import MetricChart from '#lib/components/metrics/MetricChart.svelte';
-	import MetricStatistics from '#lib/components/metrics/MetricStatistics.svelte';
-	import MetricForm from '#lib/components/metrics/MetricForm.svelte';
+	import MetricDetailPage from '#lib/components/metrics/MetricDetailPage.svelte';
+	import type { PageProps } from './$types';
+
+	let { data }: PageProps = $props();
 </script>
 
-<svelte:head>
-	<title>Hydration · Astrolife</title>
-</svelte:head>
-<div class="space-y-5">
-	<MetricCard title="Hydration" unit="L" />
-	<MetricChart />
-	<MetricStatistics />
-	<MetricForm label="Hydration" unit="L" />
-</div>
+<MetricDetailPage
+	areaId="general"
+	metricId="hydration"
+	basePath={'/crew/' + data.astronaut.id}
+	readings={data.readings}
+	entry={data.entry}
+/>
