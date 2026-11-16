@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { enhance } from '$app/forms';
+	import { enhance } from '#lib/forms/enhance.js';
 	import { invalidateAll } from '$app/navigation';
 	import type { HealthAlert } from '#lib/interfaces/health.js';
 	import { formatDate } from '#lib/utils/date.js';

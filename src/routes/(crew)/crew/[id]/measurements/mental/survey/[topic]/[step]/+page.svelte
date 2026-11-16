@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { enhance } from '$app/forms';
+	import { enhance } from '#lib/forms/enhance.js';
 	import { resolve } from '$app/paths';
 	import HealthIcon from '#lib/components/astronaut/HealthIcon.svelte';
 	import { mentalSurveyScale, sleepHoursOptions } from '#lib/data/mentalSurvey.js';

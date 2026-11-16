@@ -103,7 +103,7 @@
 		{/if}
 	</header>
 
-	<div class="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+	<div class="grid gap-3 sm:grid-cols-2 xl:grid-cols-4" data-tour="summary-vitals">
 		{#each visibleVitals as vital (vital.reading_id)}
 			{@const vitalHref = resolve(
 				(measurementPaths[vital.indicator] ?? measurementsHref).slice(1) as `crew/${string}`
@@ -200,6 +200,7 @@
 	<div>
 		<a
 			href={measurementsHref}
+			data-tour="measurements-link"
 			class="inline-flex items-center gap-2 rounded-lg border border-cyan-300/30 bg-cyan-300/10 px-3 py-2 text-xs font-semibold tracking-[0.14em] text-cyan-100 uppercase transition hover:border-cyan-200/50 hover:bg-cyan-300/15 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-300"
 		>
 			<span aria-hidden="true">+</span>

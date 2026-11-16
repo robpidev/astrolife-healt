@@ -302,7 +302,7 @@
 	/>
 
 	<!-- The rail owns the space left between the header and the dock. -->
-	<main class="relative z-10 flex min-h-0 flex-1 flex-col pb-44 sm:pb-40">
+	<main class="relative z-10 flex min-h-0 flex-1 flex-col pb-44 sm:pb-40" data-tour="crew-roster">
 		<section
 			aria-labelledby="fleet-health-heading"
 			class="mx-5 mt-4 shrink-0 rounded-2xl border border-cyan-200/15 bg-[#0b1729]/80 p-4 sm:mx-8"

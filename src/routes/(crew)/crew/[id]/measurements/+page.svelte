@@ -22,12 +22,13 @@
 		</p>
 	</header>
 
-	<ul class="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+	<ul class="grid gap-3 sm:grid-cols-2 xl:grid-cols-3" data-tour="measurement-areas">
 		{#each data.areas as area (area.id)}
 			{@const shared = area.id === sharedTransition.areaId}
 			<li>
 				<a
 					href={resolve(`${basePath}/measurements/${area.id}`.slice(1) as `crew/${string}`)}
+					data-tour={`area-card-${area.id}`}
 					class="group flex h-full flex-col rounded-2xl border border-cyan-200/15 bg-[#0b1b2e] p-5 transition-colors hover:border-cyan-300/40 hover:bg-[#0d2137] focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-cyan-300"
 				>
 					<div class="flex items-start justify-between gap-3">

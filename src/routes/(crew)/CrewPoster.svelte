@@ -39,6 +39,7 @@
 	type="button"
 	data-selected={focused}
 	data-astro-id={astronaut.id}
+	data-tour={`crew-poster-${astronaut.id}`}
 	aria-current={focused ? 'true' : undefined}
 	aria-label={`Select ${name}`}
 	onclick={() => onselect(astronaut)}

@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { enhance } from '$app/forms';
+	import { enhance } from '#lib/forms/enhance.js';
 	import { invalidateAll } from '$app/navigation';
 	import HealthStatusBadge from '#lib/components/health/HealthStatusBadge.svelte';
 	import type { Directive, GroundMessage } from '#lib/interfaces/health.js';

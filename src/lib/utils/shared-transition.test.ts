@@ -31,6 +31,6 @@ describe('resolveSharedTransition', () => {
 	it('ignores unrelated navigations', () => {
 		expect(resolveSharedTransition(url('/crew/6'), url('/crew/6/measurements'))).toBeNull();
 		expect(resolveSharedTransition(url('/crew/6/measurements'), url('/crew/6/measurements/radiation/organs'))).toBeNull();
-		expect(resolveSharedTransition(url('/mediciones'), url('/crew/6'))).toBeNull();
+		expect(resolveSharedTransition(url('/measurements'), url('/crew/6'))).toBeNull();
 	});
 });

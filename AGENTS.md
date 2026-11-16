@@ -24,7 +24,7 @@ no separate API, backend service, or mobile app.
 ### Files and folders
 
 - Components: `PascalCase.svelte` (e.g. `MeasurementForm.svelte`).
-- Routes: `kebab-case` folders (e.g. `src/routes/mediciones`).
+- Routes: `kebab-case` folders (e.g. `src/routes/measurements`).
 - Server modules: `kebab-case.ts` under `src/lib/server/`.
 - Interfaces: one file per entity in `src/lib/interfaces/`, `kebab-case.ts`.
 - Pure helpers: `kebab-case.ts` under `src/lib/utils/`.
@@ -94,7 +94,7 @@ src/
 └── routes/
     ├── +layout.svelte
     ├── +page.svelte
-    └── mediciones/
+    └── measurements/
         ├── +page.server.ts
         ├── +page.svelte
         └── MeasurementForm.svelte

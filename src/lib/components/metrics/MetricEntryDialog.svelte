@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { browser } from '$app/env';
-	import { enhance } from '$app/forms';
+	import { enhance } from '#lib/forms/enhance.js';
 	import type { SubmitFunction } from '$app/forms';
 	import type { MetricEntryConfig, MetricEntryField } from '#lib/interfaces/metric-entry.js';
 
@@ -161,7 +161,7 @@
 	onclick={handleBackdropClick}
 	{onclose}
 >
-	<form method="POST" {action} use:enhance={submit} class="p-5 sm:p-6">
+	<form method="POST" {action} use:enhance={submit} class="p-5 sm:p-6" data-tour="entry-dialog">
 		<div class="flex items-start justify-between gap-4">
 			<div>
 				<p class="text-xs font-semibold tracking-widest text-cyan-300 uppercase">New reading</p>

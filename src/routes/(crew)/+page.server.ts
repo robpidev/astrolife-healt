@@ -1,14 +1,19 @@
 import { fail } from '@sveltejs/kit';
+import { demoCrew } from '#lib/demo/mock-data.js';
 import { parseCrewPhoto } from '#lib/server/crew-photo.js';
 import { deleteAstronaut, getCrewDashboard, saveAstronaut, toggleTask } from '#lib/server/crew.js';
 import { parseAstronautForm, parseCrewId } from '#lib/server/crew-validation.js';
 import { getCrewHealthOverview } from '#lib/server/health-status.js';
 import type { Actions, PageServerLoad } from './$types';
 
-export const load: PageServerLoad = () => ({
-	crew: getCrewDashboard(),
-	health: getCrewHealthOverview()
-});
+export const load: PageServerLoad = ({ locals }) => {
+	if (locals.demo) return demoCrew();
+
+	return {
+		crew: getCrewDashboard(),
+		health: getCrewHealthOverview()
+	};
+};
 
 export const actions: Actions = {
 	saveAstronaut: async ({ request }) => {

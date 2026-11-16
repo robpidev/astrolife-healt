@@ -1,19 +1,22 @@
 <script lang="ts">
 	import { page } from '$app/state';
+	import { resolve } from '$app/paths';
 	import HealthIcon from '#lib/components/astronaut/HealthIcon.svelte';
 	import { healthAreas } from '#lib/data/healthAreas.js';
 
 	let { basePath }: { basePath: string } = $props();
+	let profileHref = $derived(resolve(basePath.slice(1) as `crew/${string}`));
 	let links = $derived(
 		healthAreas.map((area) => {
-			const href = basePath + '/measurements/' + area.id;
+			const path = basePath + '/measurements/' + area.id;
+			const href = resolve(path.slice(1) as `crew/${string}`);
 			return {
 				...area,
 				href,
 				active:
 					page.url.pathname === href ||
 					page.url.pathname.startsWith(href + '/') ||
-					(page.url.pathname === basePath && area.id === 'cardiovascular')
+					(page.url.pathname === profileHref && area.id === 'cardiovascular')
 			};
 		})
 	);
@@ -26,6 +29,7 @@
 	{#each links as link (link.id)}
 		<a
 			href={link.href}
+			data-tour={`area-link-${link.id}`}
 			aria-current={link.active ? 'location' : undefined}
 			class="flex min-h-12 shrink-0 items-center gap-2.5 rounded-lg border px-3 py-3 text-sm font-medium whitespace-nowrap transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-300 {link.active
 				? 'border-cyan-300/60 bg-cyan-300/15 text-cyan-100 shadow-[0_0_18px_0_#22d3ee15]'

@@ -62,11 +62,58 @@ export function initializeSchema(database: DatabaseSync): void {
 				CHECK(birth_date IS NULL OR birth_date GLOB '[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]')`);
 		}
 		migrateLegacyMedicalLists(database);
+		migrateSpanishLabels(database);
 		database.exec('COMMIT');
 	} catch (error) {
 		database.exec('ROLLBACK');
 		throw error;
 	}
+}
+
+/**
+ * The first schema shipped Spanish metric labels and a Spanish default role.
+ * `INSERT OR IGNORE` never revisits those rows, so rename them once. The
+ * `label = ?` guard makes the statement a no-op on an already-English database
+ * and leaves any hand-edited label alone.
+ */
+function migrateSpanishLabels(database: DatabaseSync): void {
+	const renames: [string, string, string][] = [
+		['heart_rate', 'Frecuencia cardíaca', 'Heart rate'],
+		['blood_pressure', 'Presión arterial', 'Blood pressure'],
+		['spo2', 'Saturación de oxígeno', 'Oxygen saturation'],
+		['sleep_duration', 'Duración de sueño', 'Sleep duration'],
+		['sleep_quality', 'Calidad del sueño', 'Sleep quality'],
+		['fatigue', 'Fatiga', 'Fatigue'],
+		['muscle_strength', 'Fuerza muscular', 'Muscle strength'],
+		['muscle_pain', 'Dolor muscular', 'Muscle pain'],
+		['stress', 'Estrés percibido', 'Perceived stress'],
+		['mood', 'Estado de ánimo', 'Mood'],
+		['reaction_time', 'Tiempo de reacción', 'Reaction time'],
+		['cognitive_accuracy', 'Aciertos en prueba cognitiva', 'Cognitive test accuracy'],
+		['radiation_interval', 'Dosis de radiación del intervalo', 'Interval radiation dose'],
+		['body_temperature', 'Temperatura corporal', 'Body temperature'],
+		['water_intake', 'Ingesta de agua', 'Water intake'],
+		['body_mass', 'Masa corporal', 'Body mass']
+	];
+
+	const rename = database.prepare(
+		'UPDATE metric_definitions SET label = ? WHERE code = ? AND label = ?'
+	);
+	for (const [code, from, to] of renames) rename.run(to, code, from);
+
+	database
+		.prepare(
+			`UPDATE crew_profiles SET role = 'Mission Specialist'
+			 WHERE role = 'Especialista de misión'`
+		)
+		.run();
+
+	database
+		.prepare(
+			`UPDATE measurements SET notes = 'Fictional demo data'
+			 WHERE notes = 'Datos ficticios de demostración'`
+		)
+		.run();
 }
 
 /**

@@ -1,4 +1,5 @@
-import { fail } from '@sveltejs/kit';
+import { error, fail } from '@sveltejs/kit';
+import { demoRadiation } from '#lib/demo/mock-data.js';
 import { getAreaSnapshots } from '#lib/server/health-metrics.js';
 import {
 	closeSpeAlert,
@@ -9,8 +10,14 @@ import {
 import { parseRadiationForm } from '#lib/server/radiation-registration.js';
 import type { Actions, PageServerLoad } from './$types';
 
-export const load: PageServerLoad = async ({ parent }) => {
+export const load: PageServerLoad = async ({ parent, locals }) => {
 	const { astronaut } = await parent();
+
+	if (locals.demo) {
+		const demo = demoRadiation(astronaut.id);
+		if (!demo) error(404, 'Astronaut not found');
+		return demo;
+	}
 
 	return {
 		snapshots: getAreaSnapshots(astronaut.id, 'radiation'),

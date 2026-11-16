@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { tick } from 'svelte';
-	import { enhance } from '$app/forms';
+	import { enhance } from '#lib/forms/enhance.js';
 	import { invalidateAll } from '$app/navigation';
 	import type { BmiTone, MeasurementWithBmi } from '#lib/interfaces/measurement.js';
 	import { formatDate } from '#lib/utils/date.js';

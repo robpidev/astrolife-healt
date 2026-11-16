@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { browser } from '$app/env';
-	import { enhance } from '$app/forms';
+	import { enhance } from '#lib/forms/enhance.js';
 	import type { SubmitFunction } from '$app/forms';
 	import { invalidateAll } from '$app/navigation';
 	import { bloodTypes } from '#lib/data/medical.js';
