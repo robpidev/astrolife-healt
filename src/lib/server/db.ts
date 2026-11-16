@@ -1,4 +1,5 @@
 import { mkdirSync } from 'node:fs';
+import { randomUUID } from 'node:crypto';
 import { dirname, resolve } from 'node:path';
 import { DatabaseSync } from 'node:sqlite';
 import healthSchema from '../../../bd.sql?raw';
@@ -56,10 +57,63 @@ export function initializeSchema(database: DatabaseSync): void {
 			database.exec(`ALTER TABLE astronauts ADD COLUMN sex TEXT
 				CHECK(sex IS NULL OR sex IN ('femenino','masculino','intersexual','no_especificado'))`);
 		}
+		migrateLegacyMedicalLists(database);
 		database.exec('COMMIT');
 	} catch (error) {
 		database.exec('ROLLBACK');
 		throw error;
+	}
+}
+
+/**
+ * The old dossier stored allergies and medications as free text. Move each
+ * non-empty line into the new entry table once, then clear the legacy columns
+ * so deleted entries cannot reappear on the next startup.
+ */
+function migrateLegacyMedicalLists(database: DatabaseSync): void {
+	const rows = database
+		.prepare(
+			`SELECT astronaut_id, allergies, medications FROM crew_medical_profiles
+			 WHERE (allergies IS NOT NULL AND trim(allergies) <> '')
+			    OR (medications IS NOT NULL AND trim(medications) <> '')`
+		)
+		.all() as unknown as {
+		astronaut_id: string;
+		allergies: string | null;
+		medications: string | null;
+	}[];
+
+	if (rows.length === 0) return;
+
+	const hasEntry = database.prepare(
+		'SELECT 1 FROM crew_medical_entries WHERE astronaut_id = ? AND kind = ? LIMIT 1'
+	);
+	const insert = database.prepare(
+		`INSERT INTO crew_medical_entries(id, astronaut_id, kind, name)
+		 VALUES(?,?,?,?)`
+	);
+	const clear = database.prepare(
+		'UPDATE crew_medical_profiles SET allergies = NULL, medications = NULL WHERE astronaut_id = ?'
+	);
+
+	for (const row of rows) {
+		const legacy: ['allergy' | 'medication', string | null][] = [
+			['allergy', row.allergies],
+			['medication', row.medications]
+		];
+
+		for (const [kind, text] of legacy) {
+			if (!text || hasEntry.get(row.astronaut_id, kind)) continue;
+			const names = text
+				.split(/\r?\n/)
+				.map((line) => line.trim())
+				.filter(Boolean);
+			for (const name of names) {
+				insert.run(randomUUID(), row.astronaut_id, kind, name.slice(0, 120));
+			}
+		}
+
+		clear.run(row.astronaut_id);
 	}
 }
 

@@ -196,6 +196,23 @@ CREATE TABLE IF NOT EXISTS crew_medical_profiles (
  updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
+CREATE TABLE IF NOT EXISTS crew_medical_entries (
+ id TEXT PRIMARY KEY,
+ astronaut_id TEXT NOT NULL REFERENCES astronauts(id) ON DELETE CASCADE,
+ kind TEXT NOT NULL CHECK(kind IN ('allergy','medication')),
+ name TEXT NOT NULL CHECK(length(name) BETWEEN 1 AND 120),
+ severity TEXT CHECK(severity IS NULL OR severity IN ('mild','moderate','severe','unknown')),
+ dose TEXT CHECK(dose IS NULL OR length(dose) <= 80),
+ note TEXT CHECK(note IS NULL OR length(note) <= 300),
+ created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+ CHECK (
+  (kind = 'allergy' AND dose IS NULL) OR
+  (kind = 'medication' AND severity IS NULL)
+ )
+);
+CREATE INDEX IF NOT EXISTS idx_crew_medical_entries_astronaut
+ ON crew_medical_entries(astronaut_id, kind, created_at);
+
 CREATE TABLE IF NOT EXISTS ground_messages (
  id INTEGER PRIMARY KEY AUTOINCREMENT,
  astronaut_id TEXT NOT NULL REFERENCES astronauts(id) ON DELETE CASCADE,
