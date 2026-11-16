@@ -1,0 +1,18 @@
+services:
+  astrolife:
+    build: .
+    image: astrolife:latest
+    ports:
+      - '3000:3000'
+    environment:
+      ORIGIN: http://localhost:3000
+      # Astronaut photos are stored as data URLs, so the default 512 KB body
+      # limit would reject a 2 MB upload.
+      BODY_SIZE_LIMIT: 4M
+    volumes:
+      # The SQLite file lives here; the volume keeps the crew between restarts.
+      - astrolife-data:/app/data
+    restart: unless-stopped
+
+volumes:
+  astrolife-data:

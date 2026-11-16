@@ -1,0 +1,14 @@
+node_modules
+.svelte-kit
+.vercel
+.netlify
+.wrangler
+build
+data
+docs
+.git
+.github
+.vscode
+.env
+.env.*
+*.log

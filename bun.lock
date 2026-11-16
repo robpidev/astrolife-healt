@@ -9,6 +9,7 @@
       },
       "devDependencies": {
         "@eslint/js": "^10.0.1",
+        "@sveltejs/adapter-node": "^6.0.2",
         "@sveltejs/adapter-vercel": "^7.0.0",
         "@sveltejs/kit": "^3.0.0",
         "@sveltejs/mcp": "^0.1.30",
@@ -139,6 +140,8 @@
     "@standard-schema/spec": ["@standard-schema/spec@1.1.0", "", {}, "sha512-l2aFy5jALhniG5HgqrD6jXLi/rUWrKvqN/qJx6yoJsgKhblVd+iqqU4RCXavm/jPityDo5TCvKMnpjKnOriy0w=="],
 
     "@sveltejs/acorn-typescript": ["@sveltejs/acorn-typescript@1.0.13", "", { "peerDependencies": { "acorn": "^8.9.0" } }, "sha512-wgKggnhZVL9Bfx1OaKKTrYY9BFRk6C8UAkQNUcIv1+llzYrIqy+RZm5HPKzn0NpEBvTVhTqB4kQyllZywsRBRQ=="],
+
+    "@sveltejs/adapter-node": ["@sveltejs/adapter-node@6.0.2", "", { "peerDependencies": { "@sveltejs/kit": "^3.0.0-next.0" } }, "sha512-LDCgko3cG727+fpiq0UzveID0MAG0DQ/+FOxpB9Ne0iCvUGslVtN+6irg+pXGDf+rZdW2k9UQB75tXmmDa0BfQ=="],
 
     "@sveltejs/adapter-vercel": ["@sveltejs/adapter-vercel@7.0.3", "", { "dependencies": { "@vercel/nft": "^1.10.2" }, "peerDependencies": { "@sveltejs/kit": "^3.0.0-next.0" } }, "sha512-F7LcjE2wEqDAvDduYQ8HgzoQux7JV3QNOFPMNYUex7piC1hMwbG4WgXKuMvAMeBAiMYv6ygJXFnJhUg/uIVDvw=="],
 
