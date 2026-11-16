@@ -17,6 +17,7 @@ import {
 const astronaut: Astronaut = {
 	nationality: 'Peruvian',
 	sex: 'femenino',
+	birth_date: null,
 	id: 1,
 	first_name: 'Valentina',
 	last_name: 'Ríos',

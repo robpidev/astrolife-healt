@@ -156,6 +156,7 @@ export function createCrewAstronaut(input: NewAstronautInput): Astronaut {
 		...input,
 		nationality: input.nationality ?? null,
 		sex: input.sex ?? null,
+		birth_date: input.birth_date ?? null,
 		status: 'entrenamiento',
 		avatar_url: null,
 		xp_total: 0,

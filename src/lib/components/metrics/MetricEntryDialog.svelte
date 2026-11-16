@@ -1,16 +1,32 @@
 <script lang="ts">
 	import { browser } from '$app/env';
 	import { enhance } from '$app/forms';
-	import { invalidateAll } from '$app/navigation';
 	import type { SubmitFunction } from '$app/forms';
 	import type { MetricEntryConfig, MetricEntryField } from '#lib/interfaces/metric-entry.js';
 
 	interface Props {
 		config: MetricEntryConfig;
 		onclose: () => void;
+		action?: string;
+		heading?: string;
+		submitLabel?: string;
+		note?: string;
+		footer?: string | null;
+		onsuccess?: () => void;
 	}
 
-	let { config, onclose }: Props = $props();
+	let {
+		config,
+		onclose,
+		action = '?/register',
+		heading,
+		submitLabel = 'Save reading',
+		note = 'The current date and time will be saved automatically.',
+		footer = 'Manual entry · not an automatic sensor reading',
+		onsuccess
+	}: Props = $props();
+
+	let resolvedHeading = $derived(heading ?? `Add ${config.title.toLowerCase()}`);
 
 	let dialogEl = $state<HTMLDialogElement | null>(null);
 	function initialValues(): Record<string, string> {
@@ -94,6 +110,19 @@
 		return null;
 	}
 
+	function failureMessage(data: unknown): string {
+		if (data && typeof data === 'object') {
+			if ('errors' in data && data.errors && typeof data.errors === 'object') {
+				const first = Object.values(data.errors as Record<string, unknown>).find(
+					(value) => typeof value === 'string'
+				);
+				if (typeof first === 'string') return first;
+			}
+			if ('error' in data && typeof data.error === 'string') return data.error;
+		}
+		return 'Could not save the reading. Please try again.';
+	}
+
 	const submit: SubmitFunction = ({ cancel }) => {
 		const invalid = config.fields.find((field) => fieldError(field) !== null);
 		if (invalid) {
@@ -109,16 +138,16 @@
 		}
 		pending = true;
 		errorMessage = '';
-		return async ({ result }) => {
+		return async ({ result, update }) => {
 			pending = false;
 			if (result.type === 'success') {
-				await invalidateAll();
+				onsuccess?.();
+				await update();
 				dialogEl?.close();
+			} else if (result.type === 'failure') {
+				errorMessage = failureMessage(result.data);
 			} else {
-				errorMessage =
-					result.type === 'failure' && typeof result.data?.error === 'string'
-						? result.data.error
-						: 'Could not save the reading. Please try again.';
+				errorMessage = 'Could not save the reading. Please try again.';
 			}
 		};
 	};
@@ -132,15 +161,15 @@
 	onclick={handleBackdropClick}
 	{onclose}
 >
-	<form method="POST" action="?/register" use:enhance={submit} class="p-5 sm:p-6">
+	<form method="POST" {action} use:enhance={submit} class="p-5 sm:p-6">
 		<div class="flex items-start justify-between gap-4">
 			<div>
 				<p class="text-xs font-semibold tracking-widest text-cyan-300 uppercase">New reading</p>
 				<h2 id="metric-dialog-title" class="mt-1 text-xl font-semibold text-white">
-					Add {config.title.toLowerCase()}
+					{resolvedHeading}
 				</h2>
 				<p class="mt-1 text-sm text-slate-400">
-					The current date and time will be saved automatically.
+					{note}
 				</p>
 			</div>
 			<button
@@ -260,11 +289,13 @@
 				type="submit"
 				disabled={pending || !isValid}
 				class="min-h-13 rounded-xl bg-cyan-300 px-4 text-sm font-bold text-slate-950 transition hover:bg-cyan-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-300 disabled:cursor-not-allowed disabled:opacity-45"
-				>{pending ? 'Saving…' : 'Save reading'}</button
+				>{pending ? 'Saving…' : submitLabel}</button
 			>
 		</div>
-		<p class="mt-3 text-center text-xs text-slate-500">
-			Manual entry · not an automatic sensor reading
-		</p>
+		{#if footer}
+			<p class="mt-3 text-center text-xs text-slate-500">
+				{footer}
+			</p>
+		{/if}
 	</form>
 </dialog>

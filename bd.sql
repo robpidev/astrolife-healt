@@ -6,6 +6,7 @@ CREATE TABLE IF NOT EXISTS astronauts (
  photo_path TEXT,
  nationality TEXT CHECK(nationality IS NULL OR length(nationality) BETWEEN 1 AND 80),
  sex TEXT CHECK(sex IS NULL OR sex IN ('femenino','masculino','intersexual','no_especificado')),
+ birth_date TEXT CHECK(birth_date IS NULL OR birth_date GLOB '[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]'),
  created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 CREATE TABLE IF NOT EXISTS missions (
@@ -218,6 +219,20 @@ CREATE TABLE IF NOT EXISTS crew_medical_entries (
 );
 CREATE INDEX IF NOT EXISTS idx_crew_medical_entries_astronaut
  ON crew_medical_entries(astronaut_id, kind, created_at);
+
+-- Prior medical evaluations required by the crew profile module. Each row is a
+-- dated snapshot, so old evaluations stay readable after newer ones arrive.
+CREATE TABLE IF NOT EXISTS crew_medical_evaluations (
+ id TEXT PRIMARY KEY,
+ astronaut_id TEXT NOT NULL REFERENCES astronauts(id) ON DELETE CASCADE,
+ evaluated_at TEXT NOT NULL CHECK(evaluated_at GLOB '[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]'),
+ kind TEXT NOT NULL CHECK(kind IN ('pre-mission','periodic','post-mission','other')),
+ summary TEXT NOT NULL CHECK(length(summary) BETWEEN 1 AND 200),
+ notes TEXT CHECK(notes IS NULL OR length(notes) <= 500),
+ created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+CREATE INDEX IF NOT EXISTS idx_crew_medical_evaluations_astronaut
+ ON crew_medical_evaluations(astronaut_id, evaluated_at DESC);
 
 CREATE TABLE IF NOT EXISTS ground_messages (
  id INTEGER PRIMARY KEY AUTOINCREMENT,

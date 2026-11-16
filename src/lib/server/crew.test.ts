@@ -12,7 +12,8 @@ const input = {
 	nationality: 'Mexican',
 	sex: 'femenino' as const,
 	role: 'Mission Specialist',
-	tone: 'cyan' as const
+	tone: 'cyan' as const,
+	birth_date: null
 };
 
 describe('persisted crew', () => {
@@ -23,6 +24,14 @@ describe('persisted crew', () => {
 		expect(new Set(first.astronauts.map((astronaut) => astronaut.sex)).size).toBeGreaterThan(1);
 		expect(getCrewDashboard()).toEqual(first);
 	});
+	it('seeds initial-condition baselines for demo astronauts', () => {
+		const db = getDb();
+		const total = db
+			.prepare("SELECT count(*) AS total FROM health_baselines WHERE astronaut_id LIKE 'demo-%'")
+			.get() as unknown as { total: number };
+		expect(total.total).toBe(getCrewDashboard().astronauts.length * 2);
+	});
+
 	it('persists edits, task XP round trips and deletion without reseeding', () => {
 		const photo = 'data:image/png;base64,dGVzdA==';
 		const id = saveAstronaut(null, input, photo)!;
@@ -70,7 +79,7 @@ describe('crew validation', () => {
 	});
 	it('validates names, nationality, sex, role and tone', () => {
 		const form = new FormData();
-		for (const [key, value] of Object.entries(input)) form.set(key, value);
+		for (const [key, value] of Object.entries(input)) form.set(key, String(value ?? ''));
 		expect(parseAstronautForm(form).data).toEqual(input);
 		form.set('nationality', '');
 		form.set('sex', 'invalid');
@@ -78,5 +87,29 @@ describe('crew validation', () => {
 		const invalid = parseAstronautForm(form);
 		expect(invalid.data).toBeNull();
 		expect(Object.keys(invalid.errors)).toEqual(['nationality', 'sex', 'tone']);
+	});
+	it('round-trips a birth date through save and edit', () => {
+		const withBirthDate = { ...input, birth_date: '1990-04-12' };
+		const id = saveAstronaut(null, withBirthDate)!;
+		expect(getCrewDashboard().astronauts.find((row) => row.id === id)?.birth_date).toBe(
+			'1990-04-12'
+		);
+		expect(saveAstronaut(id, { ...withBirthDate, birth_date: null })).toBe(id);
+		expect(getCrewDashboard().astronauts.find((row) => row.id === id)?.birth_date).toBeNull();
+	});
+
+	it('accepts a past birth date and rejects impossible or future ones', () => {
+		const form = new FormData();
+		for (const [key, value] of Object.entries(input)) form.set(key, String(value ?? ''));
+		form.set('birth_date', '1990-04-12');
+		expect(parseAstronautForm(form).data?.birth_date).toBe('1990-04-12');
+
+		form.set('birth_date', '2026-02-30');
+		expect(parseAstronautForm(form).errors.birth_date).toBe(
+			'Enter a valid date of birth that is not in the future.'
+		);
+
+		form.set('birth_date', '2999-01-01');
+		expect(parseAstronautForm(form).errors.birth_date).toBeTruthy();
 	});
 });

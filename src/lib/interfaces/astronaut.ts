@@ -35,6 +35,8 @@ export type AstronautSex = 'femenino' | 'masculino' | 'intersexual' | 'no_especi
 export interface Astronaut {
 	nationality: string | null;
 	sex: AstronautSex | null;
+	/** ISO date (`YYYY-MM-DD`); age is derived so it never goes stale. */
+	birth_date: string | null;
 	id: number;
 	first_name: string;
 	last_name: string;
@@ -72,6 +74,7 @@ export interface CrewDashboard {
 export interface NewAstronautInput {
 	nationality?: string | null;
 	sex?: AstronautSex | null;
+	birth_date?: string | null;
 	id: number;
 	first_name: string;
 	last_name: string;

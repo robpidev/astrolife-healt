@@ -34,13 +34,21 @@
 	let tone = $state<CrewTone>(untrack(() => astronaut?.tone ?? 'indigo'));
 	let nationality = $state(untrack(() => astronaut?.nationality ?? ''));
 	let sex = $state<string>(untrack(() => astronaut?.sex ?? 'no_especificado'));
+	let birth_date = $state(untrack(() => astronaut?.birth_date ?? ''));
 	let pending = $state(false);
 	let message = $state('');
+	function localIsoDate(date: Date): string {
+		const month = String(date.getMonth() + 1).padStart(2, '0');
+		const day = String(date.getDate()).padStart(2, '0');
+		return `${date.getFullYear()}-${month}-${day}`;
+	}
+	const todayIso = localIsoDate(new Date());
 	const errorFields = [
 		'first_name',
 		'last_name',
 		'nationality',
 		'sex',
+		'birth_date',
 		'role',
 		'tone',
 		'photo'
@@ -357,6 +365,32 @@
 							<p id="astronaut-sex-error" class="mt-1 text-xs text-rose-300">{errors.sex}</p>
 						{/if}
 					</div>
+				</div>
+
+				<div class="mt-4">
+					<label for="astronaut-birth-date" class="block text-sm font-medium text-slate-200">
+						Date of birth <span class="font-normal text-slate-400">(optional)</span>
+					</label>
+					<input
+						id="astronaut-birth-date"
+						name="birth_date"
+						type="date"
+						max={todayIso}
+						bind:value={birth_date}
+						aria-invalid={errors.birth_date ? 'true' : undefined}
+						aria-describedby={errors.birth_date
+							? 'astronaut-birth-date-help astronaut-birth-date-error'
+							: 'astronaut-birth-date-help'}
+						class="mt-1 block min-h-11 w-full rounded-xl border border-white/10 bg-white/5 px-3 text-sm text-white placeholder:text-slate-500 focus:border-teal-400 focus-visible:ring-2 focus-visible:ring-teal-400 focus-visible:outline-none"
+					/>
+					<p id="astronaut-birth-date-help" class="mt-1 text-xs text-slate-400">
+						Used to derive age; optional.
+					</p>
+					{#if errors.birth_date}
+						<p id="astronaut-birth-date-error" class="mt-1 text-xs text-rose-300">
+							{errors.birth_date}
+						</p>
+					{/if}
 				</div>
 
 				<fieldset class="mt-5">

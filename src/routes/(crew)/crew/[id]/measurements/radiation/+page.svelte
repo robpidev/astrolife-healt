@@ -152,26 +152,27 @@
 			>
 				<input type="hidden" name="kind" value="environment" />
 
-				<div>
-					<label for="radiation-environment" class="block text-sm font-medium text-slate-300">
-						Environment
-					</label>
-					<select
-						id="radiation-environment"
-						name="environment"
-						bind:value={environment}
-						class="mt-1.5 min-h-11 w-full rounded-xl border border-white/15 bg-[#081322] px-3 text-sm text-slate-100 transition focus:border-cyan-300 focus:ring-2 focus:ring-cyan-300/40 focus:outline-none"
-					>
+				<fieldset class="sm:col-span-2">
+					<legend class="block text-sm font-medium text-slate-300">Environment</legend>
+					<input type="hidden" name="environment" value={environment} />
+					<div class="mt-1.5 grid grid-cols-2 gap-2" role="group" aria-label="Environment">
 						{#each radiationEnvironments as option (option.value)}
-							<option value={option.value}>{option.label}</option>
+							<button
+								type="button"
+								aria-pressed={environment === option.value}
+								onclick={() => (environment = option.value)}
+								class="flex min-h-11 cursor-pointer items-center justify-center rounded-xl border border-white/10 bg-white/5 px-3 text-sm font-medium text-slate-300 transition select-none hover:border-cyan-300/40 hover:bg-white/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-300 aria-pressed:border-cyan-300 aria-pressed:bg-cyan-300/15 aria-pressed:text-white"
+							>
+								{option.label}
+							</button>
 						{/each}
-					</select>
+					</div>
 					{#if formErrors.environment}
 						<p class="mt-1 text-xs text-rose-300">{formErrors.environment}</p>
 					{/if}
-				</div>
+				</fieldset>
 
-				<div>
+				<div class="sm:col-span-2">
 					<label for="radiation-shielding" class="block text-sm font-medium text-slate-300">
 						Shielding
 					</label>
@@ -182,7 +183,7 @@
 						maxlength="120"
 						bind:value={shielding}
 						placeholder="e.g. 10 g/cm² aluminium"
-						class="mt-1.5 min-h-11 w-full rounded-xl border border-white/15 bg-[#081322] px-3 text-sm text-slate-100 transition placeholder:text-slate-600 focus:border-cyan-300 focus:ring-2 focus:ring-cyan-300/40 focus:outline-none"
+						class="mt-1.5 min-h-11 w-full rounded-xl border border-cyan-200/15 bg-[#081422] px-3 text-sm text-slate-100 transition placeholder:text-slate-600 hover:border-cyan-200/30 focus:border-cyan-300/60 focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-cyan-300"
 					/>
 					{#if formErrors.shielding}
 						<p class="mt-1 text-xs text-rose-300">{formErrors.shielding}</p>

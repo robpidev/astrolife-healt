@@ -23,7 +23,9 @@
 		return allergySeverities.find((option) => option.value === value)?.label ?? value;
 	}
 
-	const removeSubmit: SubmitFunction = () => {
+	const removeSubmit: SubmitFunction = ({ formData }) => {
+		const id = String(formData.get('id') ?? '');
+		removingId = id || null;
 		error = '';
 		return async ({ result }) => {
 			removingId = null;
@@ -86,7 +88,6 @@
 						<button
 							type="submit"
 							disabled={removingId === entry.id}
-							onclick={() => (removingId = entry.id)}
 							aria-label={`Remove ${entry.name}`}
 							class="min-h-9 rounded-lg border border-rose-300/20 px-2.5 text-xs font-medium text-rose-200 transition hover:bg-rose-400/10 focus-visible:outline-2 focus-visible:outline-rose-300 disabled:opacity-50"
 						>

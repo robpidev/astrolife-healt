@@ -1,7 +1,10 @@
 import { randomUUID } from 'node:crypto';
 import type {
+	HealthBaseline,
 	MedicalEntry,
 	MedicalEntryInput,
+	MedicalEvaluation,
+	MedicalEvaluationInput,
 	MedicalMarkdownField,
 	MedicalProfile
 } from '#lib/interfaces/medical-profile.js';
@@ -60,14 +63,40 @@ export function getMedicalProfile(profileId: number): MedicalProfile | null {
 		)
 		.all(astronautId) as unknown as MedicalEntry[];
 
+	const evaluations = getDb()
+		.prepare(
+			`SELECT id, kind, evaluated_at, summary, notes, created_at
+			 FROM crew_medical_evaluations
+			 WHERE astronaut_id = ?
+			 ORDER BY evaluated_at DESC, created_at DESC, rowid DESC`
+		)
+		.all(astronautId) as unknown as MedicalEvaluation[];
+
+	const baselines = getDb()
+		.prepare(
+			`SELECT b.id, b.metric_code, d.label, d.unit, b.baseline_value, b.valid_from, b.method, b.notes
+			 FROM health_baselines b
+			 JOIN metric_definitions d ON d.code = b.metric_code
+			 WHERE b.astronaut_id = ? AND (b.valid_until IS NULL OR b.valid_until >= date('now'))
+			 ORDER BY d.label ASC, b.valid_from DESC, b.rowid DESC`
+		)
+		.all(astronautId) as unknown as HealthBaseline[];
+
+	const identity = getDb()
+		.prepare('SELECT birth_date FROM astronauts WHERE id = ?')
+		.get(astronautId) as unknown as { birth_date: string | null } | undefined;
+
 	return {
 		astronaut_id: astronautId,
+		birth_date: identity?.birth_date ?? null,
 		blood_type: row?.blood_type ?? null,
 		medical_history: row?.medical_history ?? null,
 		baseline_notes: row?.baseline_notes ?? null,
 		updated_at: row?.updated_at ?? null,
 		allergies: entries.filter((entry) => entry.kind === 'allergy'),
-		medications: entries.filter((entry) => entry.kind === 'medication')
+		medications: entries.filter((entry) => entry.kind === 'medication'),
+		evaluations,
+		baselines
 	};
 }
 
@@ -131,6 +160,44 @@ export function removeMedicalEntry(profileId: number, entryId: string): boolean 
 		.run(entryId, astronautId);
 
 	if (Number(result.changes) === 0) return false;
+	touchProfile(astronautId);
+	return true;
+}
+
+export function addMedicalEvaluation(profileId: number, input: MedicalEvaluationInput): boolean {
+	const astronautId = astronautIdFor(profileId);
+	if (!astronautId) return false;
+
+	ensureProfile(astronautId);
+	getDb()
+		.prepare(
+			`INSERT INTO crew_medical_evaluations(id, astronaut_id, kind, evaluated_at, summary, notes)
+			 VALUES(?,?,?,?,?,?)`
+		)
+		.run(randomUUID(), astronautId, input.kind, input.evaluated_at, input.summary, input.notes);
+	touchProfile(astronautId);
+	return true;
+}
+
+export function removeMedicalEvaluation(profileId: number, evaluationId: string): boolean {
+	const astronautId = astronautIdFor(profileId);
+	if (!astronautId) return false;
+
+	const result = getDb()
+		.prepare('DELETE FROM crew_medical_evaluations WHERE id = ? AND astronaut_id = ?')
+		.run(evaluationId, astronautId);
+
+	if (Number(result.changes) === 0) return false;
+	touchProfile(astronautId);
+	return true;
+}
+
+/** Birth date lives on `astronauts`, but the dossier owns its editing UX. */
+export function saveBirthDate(profileId: number, birthDate: string | null): boolean {
+	const astronautId = astronautIdFor(profileId);
+	if (!astronautId) return false;
+
+	getDb().prepare('UPDATE astronauts SET birth_date = ? WHERE id = ?').run(birthDate, astronautId);
 	touchProfile(astronautId);
 	return true;
 }

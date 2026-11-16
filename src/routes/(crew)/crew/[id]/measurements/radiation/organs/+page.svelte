@@ -1,16 +1,11 @@
 <script lang="ts">
 	import { untrack } from 'svelte';
-	import { enhance } from '$app/forms';
-	import type { SubmitFunction } from '$app/forms';
-	import { invalidateAll } from '$app/navigation';
 	import MetricChart from '#lib/components/metrics/MetricChart.svelte';
+	import MetricEntryDialog from '#lib/components/metrics/MetricEntryDialog.svelte';
 	import MetricHistory from '#lib/components/metrics/MetricHistory.svelte';
+	import type { MetricEntryConfig } from '#lib/interfaces/metric-entry.js';
 	import type { RadiationOrgan, RadiationStatus } from '#lib/interfaces/radiation.js';
 	import type { PageProps } from './$types';
-
-	type FieldErrors = Partial<
-		Record<'environment' | 'shielding' | 'organ' | 'value' | 'kind', string>
-	>;
 
 	let { data, form }: PageProps = $props();
 
@@ -48,17 +43,22 @@
 		unknown: 'bg-slate-500/40'
 	};
 
-	// Seed from the failed submission so the select matches the error shown, then
+	function isOrgan(value: string | null | undefined): value is RadiationOrgan {
+		return value !== null && value !== undefined && organOrder.includes(value as RadiationOrgan);
+	}
+
+	function initialOrgan(): RadiationOrgan {
+		const submitted = form && 'values' in form ? form.values?.organ : null;
+		return isOrgan(submitted) ? submitted : 'lens';
+	}
+
+	// Seed from the failed submission so the history matches the error shown, then
 	// leave it to the user; only the first render reads the form.
-	let selected = $state<RadiationOrgan>(
-		untrack(() => {
-			const submitted = form && 'values' in form ? form.values?.organ : null;
-			return submitted && organOrder.includes(submitted as RadiationOrgan)
-				? (submitted as RadiationOrgan)
-				: 'lens';
-		})
-	);
-	let pending = $state(false);
+	let selected = $state<RadiationOrgan>(untrack(initialOrgan));
+	// The form keeps its own organ so picking one to log does not resize the
+	// history chart above it and shift the form under the cursor.
+	let draftOrgan = $state<RadiationOrgan>(untrack(initialOrgan));
+	let showEntry = $state(false);
 
 	let assessmentByOrgan = $derived(
 		new Map(
@@ -92,6 +92,8 @@
 
 	let selectedAssessment = $derived(assessmentByOrgan.get(selected) ?? null);
 	let unit = $derived(selectedAssessment?.guideline.unit ?? 'mGy-Eq');
+	let draftAssessment = $derived(assessmentByOrgan.get(draftOrgan) ?? null);
+	let draftUnit = $derived(draftAssessment?.guideline.unit ?? 'mGy-Eq');
 	// Stale readings still warrant the amber tone; unknown has no assessment yet.
 	let selectedTone = $derived.by<'green' | 'yellow' | 'red' | null>(() => {
 		switch (selectedAssessment?.status ?? 'unknown') {
@@ -109,22 +111,25 @@
 	let organReadings = $derived(data.readings.filter((reading) => reading.detail === selected));
 	let points = $derived(organReadings.map((reading) => reading.value).reverse());
 
-	let formErrors: FieldErrors = $derived(
-		form && 'errors' in form && form.errors ? form.errors : {}
-	);
 	let formSuccess: string | null = $derived(
 		form && 'success' in form ? (form.message ?? null) : null
 	);
-	let formError: string | null = $derived(form && 'error' in form ? (form.error ?? null) : null);
 
-	const submit: SubmitFunction = () => {
-		pending = true;
-		return async ({ result, update }) => {
-			await update();
-			pending = false;
-			if (result.type === 'success') await invalidateAll();
-		};
-	};
+	let entryConfig = $derived<MetricEntryConfig>({
+		title: 'Organ dose',
+		fields: [
+			{
+				name: 'value',
+				label: 'Dose',
+				unit: draftUnit,
+				min: 0,
+				max: 5000,
+				step: '0.1',
+				integer: false
+			}
+		],
+		hidden: { kind: 'organ', organ: draftOrgan }
+	});
 </script>
 
 <svelte:head>
@@ -150,14 +155,6 @@
 		>
 			{formSuccess}
 		</div>
-	{/if}
-	{#if formError}
-		<p
-			role="alert"
-			class="rounded-xl border border-rose-400/25 bg-rose-400/10 px-4 py-3 text-sm text-rose-200"
-		>
-			{formError}
-		</p>
 	{/if}
 
 	<ul class="grid gap-3 sm:grid-cols-2">
@@ -262,63 +259,43 @@
 			Record the equivalent dose of one organ from a dosimetry snapshot.
 		</p>
 
-		<form
-			method="POST"
-			action="?/organ"
-			use:enhance={submit}
-			class="mt-4 grid gap-4 sm:grid-cols-2"
-		>
-			<input type="hidden" name="kind" value="organ" />
-
-			<div>
-				<label for="organ-dose-organ" class="block text-sm font-medium text-slate-300">
-					Organ
-				</label>
-				<select
-					id="organ-dose-organ"
-					name="organ"
-					value={selected}
-					onchange={(event) =>
-						(selected = (event.currentTarget as HTMLSelectElement).value as RadiationOrgan)}
-					class="mt-1.5 min-h-11 w-full rounded-xl border border-white/15 bg-[#081322] px-3 text-sm text-slate-100 transition focus:border-cyan-300 focus:ring-2 focus:ring-cyan-300/40 focus:outline-none"
-				>
+		<div class="mt-4 grid gap-4 sm:grid-cols-2">
+			<fieldset class="sm:col-span-2">
+				<legend class="block text-sm font-medium text-slate-300">Organ</legend>
+				<div class="mt-1.5 grid grid-cols-2 gap-2 sm:grid-cols-4" role="group" aria-label="Organ">
 					{#each organOrder as organ (organ)}
-						<option value={organ}>{data.organs[organ]}</option>
+						<button
+							type="button"
+							aria-pressed={draftOrgan === organ}
+							onclick={() => (draftOrgan = organ)}
+							class="flex min-h-11 cursor-pointer items-center justify-center rounded-xl border border-white/10 bg-white/5 px-3 text-sm font-medium text-slate-300 transition select-none hover:border-cyan-300/40 hover:bg-white/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-300 aria-pressed:border-cyan-300 aria-pressed:bg-cyan-300/15 aria-pressed:text-white"
+						>
+							{data.organs[organ]}
+						</button>
 					{/each}
-				</select>
-				{#if formErrors.organ}
-					<p class="mt-1 text-xs text-rose-300">{formErrors.organ}</p>
-				{/if}
-			</div>
-
-			<div>
-				<label for="organ-dose-value" class="block text-sm font-medium text-slate-300">
-					Dose ({unit})
-				</label>
-				<input
-					id="organ-dose-value"
-					name="value"
-					type="number"
-					min="0"
-					max="5000"
-					step="0.1"
-					value={form && 'values' in form ? (form.values?.value ?? '') : ''}
-					class="mt-1.5 min-h-11 w-full rounded-xl border border-white/15 bg-[#081322] px-3 text-sm text-slate-100 tabular-nums transition placeholder:text-slate-600 focus:border-cyan-300 focus:ring-2 focus:ring-cyan-300/40 focus:outline-none"
-				/>
-				{#if formErrors.value}
-					<p class="mt-1 text-xs text-rose-300">{formErrors.value}</p>
-				{/if}
-			</div>
+				</div>
+			</fieldset>
 
 			<div class="sm:col-span-2">
 				<button
-					type="submit"
-					disabled={pending}
-					class="min-h-11 rounded-xl bg-cyan-300 px-4 text-sm font-bold text-slate-950 transition hover:bg-cyan-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-300 disabled:cursor-not-allowed disabled:opacity-50"
+					type="button"
+					onclick={() => (showEntry = true)}
+					class="min-h-12 rounded-xl bg-cyan-300 px-5 text-sm font-bold text-slate-950 transition hover:bg-cyan-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-300"
 				>
-					{pending ? 'Saving…' : 'Save organ dose'}
+					Log dose
 				</button>
 			</div>
-		</form>
+		</div>
 	</section>
 </div>
+
+{#if showEntry}
+	<MetricEntryDialog
+		config={entryConfig}
+		action="?/organ"
+		heading={`Add ${data.organs[draftOrgan].toLowerCase()} dose`}
+		submitLabel="Save dose"
+		onsuccess={() => (selected = draftOrgan)}
+		onclose={() => (showEntry = false)}
+	/>
+{/if}

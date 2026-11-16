@@ -57,6 +57,10 @@ export function initializeSchema(database: DatabaseSync): void {
 			database.exec(`ALTER TABLE astronauts ADD COLUMN sex TEXT
 				CHECK(sex IS NULL OR sex IN ('femenino','masculino','intersexual','no_especificado'))`);
 		}
+		if (!astronautColumns.some((column) => column.name === 'birth_date')) {
+			database.exec(`ALTER TABLE astronauts ADD COLUMN birth_date TEXT
+				CHECK(birth_date IS NULL OR birth_date GLOB '[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]')`);
+		}
 		migrateLegacyMedicalLists(database);
 		database.exec('COMMIT');
 	} catch (error) {

@@ -3,11 +3,16 @@ import { allergySeverities } from '#lib/data/medical.js';
 import type { AllergySeverity, MedicalMarkdownField } from '#lib/interfaces/medical-profile.js';
 import {
 	addMedicalEntry,
+	addMedicalEvaluation,
 	getMedicalProfile,
 	removeMedicalEntry,
+	removeMedicalEvaluation,
+	saveBirthDate,
 	saveBloodType,
 	saveMedicalMarkdown
 } from '#lib/server/medical-profile.js';
+import { parseBirthDate } from '#lib/server/crew-validation.js';
+import { parseMedicalEvaluationForm } from '#lib/server/medical-validation.js';
 import type { Actions, PageServerLoad } from './$types';
 
 function profileId(params: { id: string }): number {
@@ -23,6 +28,22 @@ export const load: PageServerLoad = ({ params }) => ({
 const MARKDOWN_FIELDS: readonly MedicalMarkdownField[] = ['medical_history', 'baseline_notes'];
 
 export const actions: Actions = {
+	saveBirthDate: async ({ params, request }) => {
+		const form = await request.formData();
+		const raw = String(form.get('birth_date') ?? '').trim();
+		const birthDate = parseBirthDate(raw);
+
+		if (raw && birthDate === null) {
+			return fail(400, { error: 'Enter a valid date of birth that is not in the future.' });
+		}
+
+		if (!saveBirthDate(profileId(params), birthDate)) {
+			return fail(404, { error: 'Astronaut not found.' });
+		}
+
+		return { success: true, message: 'Date of birth saved.' };
+	},
+
 	saveBloodType: async ({ params, request }) => {
 		const form = await request.formData();
 		const bloodType = String(form.get('blood_type') ?? '').trim();
@@ -97,6 +118,33 @@ export const actions: Actions = {
 		}
 
 		return { success: true, message: 'Entry removed.' };
+	},
+
+	addEvaluation: async ({ params, request }) => {
+		const result = parseMedicalEvaluationForm(await request.formData());
+		if (!result.data) {
+			return fail(400, {
+				error: Object.values(result.errors)[0] ?? 'Check the evaluation fields.'
+			});
+		}
+
+		if (!addMedicalEvaluation(profileId(params), result.data)) {
+			return fail(404, { error: 'Astronaut not found.' });
+		}
+
+		return { success: true, message: 'Evaluation added.' };
+	},
+
+	removeEvaluation: async ({ params, request }) => {
+		const form = await request.formData();
+		const id = String(form.get('id') ?? '');
+		if (!id) return fail(400, { error: 'Missing evaluation.' });
+
+		if (!removeMedicalEvaluation(profileId(params), id)) {
+			return fail(404, { error: 'Evaluation not found.' });
+		}
+
+		return { success: true, message: 'Evaluation removed.' };
 	},
 
 	saveMarkdown: async ({ params, request }) => {

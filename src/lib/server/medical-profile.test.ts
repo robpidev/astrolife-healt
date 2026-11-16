@@ -5,8 +5,11 @@ process.env.DATABASE_PATH = ':memory:';
 const { getDb, initializeSchema } = await import('#lib/server/db.js');
 const {
 	addMedicalEntry,
+	addMedicalEvaluation,
 	getMedicalProfile,
 	removeMedicalEntry,
+	removeMedicalEvaluation,
+	saveBirthDate,
 	saveBloodType,
 	saveMedicalMarkdown
 } = await import('#lib/server/medical-profile.js');
@@ -15,7 +18,9 @@ const db = getDb();
 
 function reset(): void {
 	db.exec(`
+		DELETE FROM crew_medical_evaluations;
 		DELETE FROM crew_medical_entries;
+		DELETE FROM health_baselines;
 		DELETE FROM crew_medical_profiles;
 		DELETE FROM crew_profiles;
 		DELETE FROM astronauts;
@@ -32,6 +37,8 @@ describe('medical profile', () => {
 			blood_type: null,
 			allergies: [],
 			medications: [],
+			evaluations: [],
+			baselines: [],
 			medical_history: null,
 			baseline_notes: null
 		});
@@ -84,6 +91,62 @@ describe('medical profile', () => {
 		expect(removeMedicalEntry(10, profile.allergies[0].id)).toBe(true);
 		expect(getMedicalProfile(10)?.allergies).toHaveLength(0);
 		expect(getMedicalProfile(10)?.medications).toHaveLength(1);
+	});
+
+	it('saves and clears the birth date through the dossier', () => {
+		expect(saveBirthDate(10, '1990-04-12')).toBe(true);
+		expect(getMedicalProfile(10)?.birth_date).toBe('1990-04-12');
+		expect(saveBirthDate(10, null)).toBe(true);
+		expect(getMedicalProfile(10)?.birth_date).toBeNull();
+		expect(saveBirthDate(999, '1990-04-12')).toBe(false);
+	});
+
+	it('adds, orders and removes medical evaluations', () => {
+		expect(
+			addMedicalEvaluation(10, {
+				kind: 'pre-mission',
+				evaluated_at: '2026-01-10',
+				summary: 'Cleared for long-duration flight',
+				notes: null
+			})
+		).toBe(true);
+		expect(
+			addMedicalEvaluation(10, {
+				kind: 'periodic',
+				evaluated_at: '2026-06-01',
+				summary: 'Annual check',
+				notes: 'No findings'
+			})
+		).toBe(true);
+
+		const profile = getMedicalProfile(10)!;
+		expect(profile.evaluations.map((item) => item.summary)).toEqual([
+			'Annual check',
+			'Cleared for long-duration flight'
+		]);
+
+		expect(removeMedicalEvaluation(10, profile.evaluations[0].id)).toBe(true);
+		expect(getMedicalProfile(10)?.evaluations).toHaveLength(1);
+		expect(removeMedicalEvaluation(10, 'missing-id')).toBe(false);
+	});
+
+	it('reads the active health baselines with metric labels', () => {
+		db.prepare(
+			`INSERT INTO health_baselines(id, astronaut_id, metric_code, baseline_value, valid_from, valid_until)
+			 VALUES('b1', 'a1', 'heart_rate', 58, '2026-01-01', NULL)`
+		).run();
+		db.prepare(
+			`INSERT INTO health_baselines(id, astronaut_id, metric_code, baseline_value, valid_from, valid_until)
+			 VALUES('b2', 'a1', 'heart_rate', 70, '2025-01-01', '2025-12-31')`
+		).run();
+
+		const profile = getMedicalProfile(10)!;
+		expect(profile.baselines).toHaveLength(1);
+		expect(profile.baselines[0]).toMatchObject({
+			metric_code: 'heart_rate',
+			baseline_value: 58
+		});
+		expect(profile.baselines[0].label).toBeTruthy();
 	});
 
 	it('migrates legacy free-text lists once', () => {

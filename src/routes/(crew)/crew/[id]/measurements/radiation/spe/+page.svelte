@@ -1,13 +1,8 @@
 <script lang="ts">
-	import { enhance } from '$app/forms';
-	import type { SubmitFunction } from '$app/forms';
-	import { invalidateAll } from '$app/navigation';
+	import MetricEntryDialog from '#lib/components/metrics/MetricEntryDialog.svelte';
+	import type { MetricEntryConfig } from '#lib/interfaces/metric-entry.js';
 	import type { RadiationStatus } from '#lib/interfaces/radiation.js';
 	import type { PageProps } from './$types';
-
-	type FieldErrors = Partial<
-		Record<'environment' | 'shielding' | 'organ' | 'value' | 'kind', string>
-	>;
 
 	let { data, form }: PageProps = $props();
 
@@ -47,8 +42,6 @@
 		dateStyle: 'medium',
 		timeStyle: 'short'
 	});
-
-	let pending = $state(false);
 
 	let assessment = $derived(data.assessment);
 	let speActive = $derived(data.profile?.spe_alert_active ?? false);
@@ -102,22 +95,27 @@
 		return groups.reverse();
 	});
 
-	let formErrors: FieldErrors = $derived(
-		form && 'errors' in form && form.errors ? form.errors : {}
-	);
 	let formSuccess: string | null = $derived(
 		form && 'success' in form ? (form.message ?? null) : null
 	);
 	let formError: string | null = $derived(form && 'error' in form ? (form.error ?? null) : null);
 
-	const submit: SubmitFunction = () => {
-		pending = true;
-		return async ({ result, update }) => {
-			await update();
-			pending = false;
-			if (result.type === 'success') await invalidateAll();
-		};
-	};
+	let showEntry = $state(false);
+	let entryConfig = $derived<MetricEntryConfig>({
+		title: 'SPE segment',
+		fields: [
+			{
+				name: 'value',
+				label: 'Segment dose',
+				unit: 'mSv',
+				min: 0.01,
+				max: 1000,
+				step: '0.01',
+				integer: false
+			}
+		],
+		hidden: { kind: 'spe' }
+	});
 </script>
 
 <svelte:head>
@@ -253,44 +251,30 @@
 			Segments logged during the open event sum towards the 250 mSv effective dose limit.
 		</p>
 
-		<form method="POST" action="?/spe" use:enhance={submit} class="mt-4 grid gap-4 sm:grid-cols-2">
-			<input type="hidden" name="kind" value="spe" />
-
-			<div>
-				<label for="spe-segment-value" class="block text-sm font-medium text-slate-300">
-					Segment dose (mSv)
-				</label>
-				<input
-					id="spe-segment-value"
-					name="value"
-					type="number"
-					min="0.01"
-					max="1000"
-					step="0.01"
-					disabled={!speActive}
-					aria-describedby={!speActive ? 'spe-segment-note' : undefined}
-					value={form && 'values' in form ? (form.values?.value ?? '') : ''}
-					class="mt-1.5 min-h-11 w-full rounded-xl border border-white/15 bg-[#081322] px-3 text-sm text-slate-100 tabular-nums transition placeholder:text-slate-600 focus:border-cyan-300 focus:ring-2 focus:ring-cyan-300/40 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
-				/>
-				{#if formErrors.value}
-					<p class="mt-1 text-xs text-rose-300">{formErrors.value}</p>
-				{/if}
-			</div>
-
-			<div class="flex flex-col justify-end gap-2">
-				<button
-					type="submit"
-					disabled={pending || !speActive}
-					class="min-h-11 rounded-xl bg-cyan-300 px-4 text-sm font-bold text-slate-950 transition hover:bg-cyan-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-300 disabled:cursor-not-allowed disabled:opacity-50"
-				>
-					{pending ? 'Saving…' : 'Save segment'}
-				</button>
-				{#if !speActive}
-					<p id="spe-segment-note" class="text-xs leading-relaxed text-amber-200">
-						Open a solar particle event alert on the Radiation page before logging segments.
-					</p>
-				{/if}
-			</div>
-		</form>
+		<div class="mt-4">
+			<button
+				type="button"
+				disabled={!speActive}
+				onclick={() => (showEntry = true)}
+				class="min-h-12 rounded-xl bg-cyan-300 px-5 text-sm font-bold text-slate-950 transition hover:bg-cyan-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-300 disabled:cursor-not-allowed disabled:opacity-50"
+			>
+				Log segment
+			</button>
+			{#if !speActive}
+				<p id="spe-segment-note" class="mt-2 text-xs leading-relaxed text-amber-200">
+					Open a solar particle event alert on the Radiation page before logging segments.
+				</p>
+			{/if}
+		</div>
 	</section>
 </div>
+
+{#if showEntry}
+	<MetricEntryDialog
+		config={entryConfig}
+		action="?/spe"
+		heading="Add SPE segment"
+		submitLabel="Save segment"
+		onclose={() => (showEntry = false)}
+	/>
+{/if}

@@ -28,12 +28,18 @@ describe('health schema migration', () => {
 			"CREATE TABLE astronauts(id TEXT PRIMARY KEY,full_name TEXT NOT NULL,photo_path TEXT,created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP); INSERT INTO astronauts(id,full_name) VALUES('existing','Existing Name');"
 		);
 		initializeSchema(db);
-		expect(db.prepare('SELECT full_name,nationality,sex FROM astronauts').get()).toMatchObject({
+		expect(
+			db.prepare('SELECT full_name,nationality,sex,birth_date FROM astronauts').get()
+		).toMatchObject({
 			full_name: 'Existing Name',
 			nationality: null,
-			sex: null
+			sex: null,
+			birth_date: null
 		});
 		expect(() => db.prepare('UPDATE astronauts SET sex = ?').run('invalid')).toThrow();
+		expect(() => db.prepare('UPDATE astronauts SET birth_date = ?').run('14/03/1991')).toThrow();
+		db.prepare('UPDATE astronauts SET birth_date = ?').run('1991-03-14');
+		expect(db.prepare('SELECT birth_date FROM astronauts').get()?.birth_date).toBe('1991-03-14');
 		db.close();
 	});
 });
