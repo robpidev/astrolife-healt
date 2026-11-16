@@ -15,6 +15,8 @@
 	import AstronautDialog from './AstronautDialog.svelte';
 	import SettingsDialog from './SettingsDialog.svelte';
 	import HealthStatusBadge from '#lib/components/health/HealthStatusBadge.svelte';
+	import AstronautAvatar from '#lib/components/AstronautAvatar.svelte';
+	import type { HealthSeverity } from '#lib/interfaces/health.js';
 	import type { PageProps } from './$types';
 
 	type DialogMode = 'closed' | 'create' | 'edit';
@@ -56,50 +58,54 @@
 		}
 	});
 
-	let fleetCounts = $derived.by(() => {
-		const counts = [
-			{
-				key: 'green',
-				count: data.health.green,
-				label: 'ready',
-				tone: 'border-emerald-300/30 bg-emerald-400/10 text-emerald-200',
-				dot: 'bg-emerald-400'
-			},
-			{
-				key: 'yellow',
-				count: data.health.yellow,
-				label: 'caution',
-				tone: 'border-amber-300/30 bg-amber-400/10 text-amber-200',
-				dot: 'bg-amber-400'
-			},
-			{
-				key: 'red',
-				count: data.health.red,
-				label: 'critical',
-				tone: 'border-rose-300/30 bg-rose-400/10 text-rose-200',
-				dot: 'bg-rose-400'
-			},
-			{
-				key: 'unknown',
-				count: data.health.unknown,
-				label: 'no data',
-				tone: 'border-slate-400/20 bg-slate-400/10 text-slate-300',
-				dot: 'bg-slate-400'
-			}
-		];
-		const present = counts.filter((entry) => entry.count > 0);
-		return present.length > 0
-			? present
-			: [
-					{
-						key: 'unknown',
-						count: data.health.unknown,
-						label: 'no data',
-						tone: 'border-slate-400/20 bg-slate-400/10 text-slate-300',
-						dot: 'bg-slate-400'
-					}
-				];
+	const fleetSeverity = {
+		red: {
+			label: 'critical',
+			ring: 'ring-rose-400/70',
+			chip: 'border-rose-300/30 bg-rose-400/10 text-rose-100'
+		},
+		yellow: {
+			label: 'caution',
+			ring: 'ring-amber-400/70',
+			chip: 'border-amber-300/30 bg-amber-400/10 text-amber-100'
+		},
+		unknown: {
+			label: 'no data',
+			ring: 'ring-slate-400/50',
+			chip: 'border-slate-400/20 bg-slate-400/10 text-slate-300'
+		},
+		green: {
+			label: 'ready',
+			ring: 'ring-emerald-400/70',
+			chip: 'border-emerald-300/30 bg-emerald-400/10 text-emerald-100'
+		}
+	} satisfies Record<HealthSeverity, { label: string; ring: string; chip: string }>;
+
+	// Critical and caution must read first; a healthy crew still lists everyone.
+	const fleetMembers = $derived.by(() => {
+		const order: HealthSeverity[] = ['red', 'yellow', 'unknown', 'green'];
+		return order.flatMap((severity) =>
+			crew
+				.filter((astronaut) => (data.health.byAstronaut[astronaut.id] ?? 'unknown') === severity)
+				.map((astronaut) => ({
+					astronaut,
+					name: astronautName(astronaut),
+					meta: fleetSeverity[severity]
+				}))
+		);
 	});
+
+	let fleetSummary = $derived(
+		[
+			{ count: data.health.red, label: 'critical' },
+			{ count: data.health.yellow, label: 'caution' },
+			{ count: data.health.unknown, label: 'no data' },
+			{ count: data.health.green, label: 'ready' }
+		]
+			.filter((entry) => entry.count > 0)
+			.map((entry) => `${entry.count} ${entry.label}`)
+			.join(' · ')
+	);
 
 	// The dashboard keeps its state in memory, so it resets when we come back
 	// from a profile. Re-select the astronaut whose page we just left.
@@ -145,6 +151,13 @@
 			return;
 		}
 
+		selectedId = astronaut.id;
+		announcement = `Selected: ${astronautName(astronaut)}`;
+	}
+
+	// The health strip is a "look at this person" shortcut: it only selects,
+	// so a click never navigates away from the dashboard.
+	function selectFromFleet(astronaut: Astronaut): void {
 		selectedId = astronaut.id;
 		announcement = `Selected: ${astronautName(astronaut)}`;
 	}
@@ -303,18 +316,46 @@
 						Fleet health
 					</h2>
 					<HealthStatusBadge severity={data.health.overall} label={fleetLabel} />
+					{#if fleetSummary}
+						<span class="text-[11px] text-slate-400">{fleetSummary}</span>
+					{/if}
 				</div>
-				<ul class="flex flex-wrap items-center gap-2">
-					{#each fleetCounts as chip (chip.key)}
-						<li
-							class="inline-flex items-center gap-1.5 rounded-md border px-2 py-0.5 text-[11px] font-medium {chip.tone}"
-						>
-							<span aria-hidden="true" class="size-1.5 rounded-full {chip.dot}"></span>
-							{chip.count}
-							{chip.label}
-						</li>
-					{/each}
-				</ul>
+				{#if fleetMembers.length === 0}
+					<p class="text-[11px] text-slate-400">No crew members yet.</p>
+				{:else}
+					<ul class="flex flex-wrap items-center gap-1.5" aria-label="Crew health status">
+						{#each fleetMembers as member (member.astronaut.id)}
+							{@const selected = member.astronaut.id === selectedId}
+							<li>
+								<button
+									type="button"
+									onclick={() => selectFromFleet(member.astronaut)}
+									aria-pressed={selected}
+									aria-label={`Select ${member.name}, ${member.meta.label}`}
+									title={`${member.name} · ${member.meta.label}`}
+									class="flex items-center gap-1.5 rounded-full border py-0.5 pr-2.5 pl-1 text-[11px] font-medium transition hover:brightness-110 focus-visible:ring-2 focus-visible:ring-teal-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950 focus-visible:outline-none {member
+										.meta.chip} {selected ? 'ring-2 ring-white/60' : ''}"
+								>
+									<!-- AstronautAvatar always paints its tone ring, so the
+									severity ring lives on this wrapper instead. -->
+									<span
+										class="grid size-6 shrink-0 place-items-center rounded-full ring-2 {member.meta
+											.ring}"
+									>
+										<AstronautAvatar
+											astronaut={member.astronaut}
+											class="size-6"
+											textClass="text-[10px]"
+											ringClass="ring-0"
+										/>
+									</span>
+									<span class="max-w-20 truncate">{member.astronaut.first_name}</span>
+									<span class="text-[10px] opacity-80">· {member.meta.label}</span>
+								</button>
+							</li>
+						{/each}
+					</ul>
+				{/if}
 			</div>
 		</section>
 		<CrewRail
