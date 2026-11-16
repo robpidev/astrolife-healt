@@ -14,6 +14,7 @@
 	import AstronautSheet from './AstronautSheet.svelte';
 	import AstronautDialog from './AstronautDialog.svelte';
 	import SettingsDialog from './SettingsDialog.svelte';
+	import HealthStatusBadge from '#lib/components/health/HealthStatusBadge.svelte';
 	import type { PageProps } from './$types';
 
 	type DialogMode = 'closed' | 'create' | 'edit';
@@ -41,6 +42,64 @@
 	let canNext = $derived(selectedIndex >= 0 && selectedIndex < crew.length - 1);
 	let missionDay = $derived(data.crew.summary.mission_day);
 	let fullscreenSupported = $derived(browser && document.fullscreenEnabled);
+
+	let fleetLabel = $derived.by(() => {
+		switch (data.health.overall) {
+			case 'green':
+				return 'All clear';
+			case 'yellow':
+				return 'Caution';
+			case 'red':
+				return 'Critical';
+			default:
+				return 'No data';
+		}
+	});
+
+	let fleetCounts = $derived.by(() => {
+		const counts = [
+			{
+				key: 'green',
+				count: data.health.green,
+				label: 'ready',
+				tone: 'border-emerald-300/30 bg-emerald-400/10 text-emerald-200',
+				dot: 'bg-emerald-400'
+			},
+			{
+				key: 'yellow',
+				count: data.health.yellow,
+				label: 'caution',
+				tone: 'border-amber-300/30 bg-amber-400/10 text-amber-200',
+				dot: 'bg-amber-400'
+			},
+			{
+				key: 'red',
+				count: data.health.red,
+				label: 'critical',
+				tone: 'border-rose-300/30 bg-rose-400/10 text-rose-200',
+				dot: 'bg-rose-400'
+			},
+			{
+				key: 'unknown',
+				count: data.health.unknown,
+				label: 'no data',
+				tone: 'border-slate-400/20 bg-slate-400/10 text-slate-300',
+				dot: 'bg-slate-400'
+			}
+		];
+		const present = counts.filter((entry) => entry.count > 0);
+		return present.length > 0
+			? present
+			: [
+					{
+						key: 'unknown',
+						count: data.health.unknown,
+						label: 'no data',
+						tone: 'border-slate-400/20 bg-slate-400/10 text-slate-300',
+						dot: 'bg-slate-400'
+					}
+				];
+	});
 
 	// The dashboard keeps its state in memory, so it resets when we come back
 	// from a profile. Re-select the astronaut whose page we just left.
@@ -221,6 +280,33 @@
 
 	<!-- The rail owns the space left between the header and the dock. -->
 	<main class="relative z-10 flex min-h-0 flex-1 flex-col pb-44 sm:pb-40">
+		<section
+			aria-labelledby="fleet-health-heading"
+			class="mx-5 mt-4 shrink-0 rounded-2xl border border-cyan-200/15 bg-[#0b1729]/80 p-4 sm:mx-8"
+		>
+			<div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+				<div class="flex flex-wrap items-center gap-2.5">
+					<h2
+						id="fleet-health-heading"
+						class="text-[11px] font-semibold tracking-[0.18em] text-slate-400 uppercase"
+					>
+						Fleet health
+					</h2>
+					<HealthStatusBadge severity={data.health.overall} label={fleetLabel} />
+				</div>
+				<ul class="flex flex-wrap items-center gap-2">
+					{#each fleetCounts as chip (chip.key)}
+						<li
+							class="inline-flex items-center gap-1.5 rounded-md border px-2 py-0.5 text-[11px] font-medium {chip.tone}"
+						>
+							<span aria-hidden="true" class="size-1.5 rounded-full {chip.dot}"></span>
+							{chip.count}
+							{chip.label}
+						</li>
+					{/each}
+				</ul>
+			</div>
+		</section>
 		<CrewRail
 			{crew}
 			{selectedId}

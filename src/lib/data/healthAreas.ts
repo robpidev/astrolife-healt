@@ -27,6 +27,12 @@ export const healthAreas = [
 				label: 'Oxygen',
 				unit: '%',
 				metric_code: 'spo2'
+			},
+			{
+				id: 'respiratory-rate',
+				label: 'Respiratory rate',
+				unit: 'breaths/min',
+				metric_code: 'respiratory_rate'
 			}
 		]
 	},
@@ -126,6 +132,12 @@ export const healthAreas = [
 				label: 'Weight',
 				unit: 'kg',
 				metric_code: 'body_mass'
+			},
+			{
+				id: 'fasting-glucose',
+				label: 'Fasting glucose',
+				unit: 'mg/dL',
+				metric_code: 'fasting_glucose'
 			},
 			{
 				id: 'symptoms',

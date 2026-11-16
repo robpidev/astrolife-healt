@@ -4,6 +4,7 @@
 	import AstronautIdentityCard from '#lib/components/astronaut/AstronautIdentityCard.svelte';
 	import AstronautBodyMap from '#lib/components/astronaut/AstronautBodyMap.svelte';
 	import HealthAreaSelector from '#lib/components/astronaut/HealthAreaSelector.svelte';
+	import HealthStatusChip from '#lib/components/health/HealthStatusChip.svelte';
 	import ProfileTabs from '#lib/components/navigation/ProfileTabs.svelte';
 	import type { LayoutProps } from './$types';
 
@@ -69,6 +70,10 @@
 			<div class="min-w-0 flex-1">
 				<ProfileTabs {basePath} class="min-w-0 flex-1 justify-start lg:justify-end" />
 			</div>
+			<HealthStatusChip
+				summary={data.alertSummary}
+				href={'/crew/' + data.astronaut.id + '/alerts'}
+			/>
 		</header>
 		<div
 			class="mt-4 grid min-h-0 flex-1 grid-rows-[auto_minmax(0,1fr)] items-stretch gap-5 lg:grid-cols-[220px_minmax(0,1fr)] xl:grid-cols-[220px_minmax(350px,0.8fr)_minmax(0,1.6fr)] xl:grid-rows-[minmax(0,1fr)]"

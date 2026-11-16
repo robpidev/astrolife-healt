@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { resolve } from '$app/paths';
 	import AstronautAvatar from '#lib/components/AstronautAvatar.svelte';
 	import type { Astronaut } from '#lib/interfaces/astronaut.js';
 	import { astronautName } from '#lib/utils/crew.js';
@@ -7,6 +8,8 @@
 	let name = $derived(astronautName(astronaut));
 	const statuses = { mision: 'On mission', entrenamiento: 'In training', descanso: 'Resting' };
 	let status = $derived(statuses[astronaut.status]);
+	let medicalHref = $derived(resolve('/(crew)/crew/[id]/medical', { id: String(astronaut.id) }));
+	let alertsHref = $derived(resolve('/(crew)/crew/[id]/alerts', { id: String(astronaut.id) }));
 </script>
 
 <section
@@ -50,8 +53,19 @@
 		</div>
 	</dl>
 	<div class="m-4 mt-0 rounded-xl border border-cyan-200/10 bg-cyan-300/5 p-3">
-		<p class="text-sm leading-relaxed text-slate-400">
-			Health status will be shown once evaluations are recorded.
-		</p>
+		<div class="flex flex-wrap gap-2">
+			<a
+				href={medicalHref}
+				class="rounded-lg border border-cyan-200/20 bg-cyan-300/5 px-3 py-1.5 text-xs font-semibold text-cyan-100 transition-colors hover:border-cyan-200/40 hover:bg-cyan-300/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-300"
+			>
+				Medical dossier
+			</a>
+			<a
+				href={alertsHref}
+				class="rounded-lg border border-cyan-200/20 bg-cyan-300/5 px-3 py-1.5 text-xs font-semibold text-cyan-100 transition-colors hover:border-cyan-200/40 hover:bg-cyan-300/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-300"
+			>
+				Warnings
+			</a>
+		</div>
 	</div>
 </section>

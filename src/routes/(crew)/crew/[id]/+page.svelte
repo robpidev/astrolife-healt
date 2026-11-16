@@ -1,5 +1,5 @@
 <script lang="ts">
-	import HealthAreaOverview from '#lib/components/metrics/HealthAreaOverview.svelte';
+	import HealthSummaryHud from '#lib/components/health/HealthSummaryHud.svelte';
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
@@ -9,4 +9,6 @@
 <svelte:head>
 	<title>Astronaut profile · Astrolife Health</title>
 </svelte:head>
-<HealthAreaOverview areaId="cardiovascular" {basePath} snapshots={data.snapshots} />
+
+<h1 class="sr-only">Astronaut health summary</h1>
+<HealthSummaryHud status={data.status} vitals={data.vitals} alerts={data.alerts} {basePath} />

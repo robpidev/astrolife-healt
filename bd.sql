@@ -121,7 +121,9 @@ INSERT OR IGNORE INTO metric_definitions(code,category,label,unit,value_kind,min
 ('radiation_interval','radiation','Dosis de radiación del intervalo','mSv','numeric',0,NULL),
 ('body_temperature','general','Temperatura corporal','°C','numeric',NULL,NULL),
 ('water_intake','general','Ingesta de agua','mL','numeric',0,NULL),
-('body_mass','general','Masa corporal','kg','numeric',0,NULL);
+('body_mass','general','Masa corporal','kg','numeric',0,NULL),
+('fasting_glucose','general','Fasting glucose','mg/dL','numeric',0,NULL),
+('respiratory_rate','cardiovascular','Respiratory rate','breaths/min','numeric',0,NULL);
 
 
 -- Mental health survey (SMIA): one row per session and one row per answered item,
@@ -172,3 +174,36 @@ CREATE TABLE IF NOT EXISTS app_migrations (
  name TEXT PRIMARY KEY,
  applied_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
+
+-- Clinical acknowledgements are stored per reading: a new reading reopens the
+-- warning automatically instead of leaving a stale resolved state.
+CREATE TABLE IF NOT EXISTS alert_acknowledgements (
+ id INTEGER PRIMARY KEY AUTOINCREMENT,
+ astronaut_id TEXT NOT NULL REFERENCES astronauts(id) ON DELETE CASCADE,
+ indicator_id TEXT NOT NULL,
+ reading_id TEXT NOT NULL,
+ acknowledged_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+ UNIQUE(astronaut_id, indicator_id, reading_id)
+);
+
+CREATE TABLE IF NOT EXISTS crew_medical_profiles (
+ astronaut_id TEXT PRIMARY KEY REFERENCES astronauts(id) ON DELETE CASCADE,
+ blood_type TEXT CHECK(blood_type IS NULL OR length(blood_type) <= 10),
+ allergies TEXT CHECK(allergies IS NULL OR length(allergies) <= 500),
+ medications TEXT CHECK(medications IS NULL OR length(medications) <= 500),
+ medical_history TEXT CHECK(medical_history IS NULL OR length(medical_history) <= 1000),
+ baseline_notes TEXT CHECK(baseline_notes IS NULL OR length(baseline_notes) <= 1000),
+ updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS ground_messages (
+ id INTEGER PRIMARY KEY AUTOINCREMENT,
+ astronaut_id TEXT NOT NULL REFERENCES astronauts(id) ON DELETE CASCADE,
+ direction TEXT NOT NULL CHECK(direction IN ('up','down')),
+ kind TEXT NOT NULL CHECK(kind IN ('alert','recommendation','consult','sync')),
+ body TEXT NOT NULL CHECK(length(body) BETWEEN 1 AND 1000),
+ status TEXT NOT NULL DEFAULT 'queued' CHECK(status IN ('queued','sent','received')),
+ created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+ synced_at TEXT
+);
+CREATE INDEX IF NOT EXISTS idx_ground_messages_astronaut ON ground_messages(astronaut_id, created_at DESC);

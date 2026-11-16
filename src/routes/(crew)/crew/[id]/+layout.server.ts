@@ -1,5 +1,6 @@
 import { error } from '@sveltejs/kit';
 import { getAstronaut } from '#lib/server/crew.js';
+import { getAlertSummary } from '#lib/server/alerts.js';
 import type { LayoutServerLoad } from './$types';
 
 export const load: LayoutServerLoad = ({ params }) => {
@@ -11,5 +12,5 @@ export const load: LayoutServerLoad = ({ params }) => {
 		error(404, 'Astronaut not found');
 	}
 
-	return { astronaut };
+	return { astronaut, alertSummary: getAlertSummary(astronaut.id) };
 };

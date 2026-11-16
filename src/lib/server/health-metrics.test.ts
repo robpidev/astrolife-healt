@@ -170,7 +170,7 @@ describe('getAreaSnapshots', () => {
 		const general = getAreaSnapshots(10, 'general');
 		const missing = getAreaSnapshots(999, 'general');
 
-		expect(general).toHaveLength(4);
+		expect(general).toHaveLength(5);
 		expect(
 			general.every((snapshot) => snapshot.display === null && snapshot.points.length === 0)
 		).toBe(true);
