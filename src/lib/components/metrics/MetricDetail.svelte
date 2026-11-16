@@ -25,8 +25,16 @@
 		/** Explicit status badge for metrics without a clinical indicator. */
 		statusLabel?: string | null;
 		statusTone?: 'green' | 'yellow' | 'red' | null;
+		/** Copy for the reference band shown next to the latest reading. */
+		referenceLabel?: string | null;
+		/** Lower bound of the normal band, in the display unit. */
+		referenceMin?: number | null;
+		/** Upper bound of the normal band, in the display unit. */
+		referenceMax?: number | null;
 		/** Custom inline form, used by metrics that need more than one field. */
 		form?: Snippet;
+		/** Rendered after the shared chart, e.g. clinical reference content. */
+		children?: Snippet;
 	}
 
 	let {
@@ -44,7 +52,11 @@
 		surveyLabel = 'Answer the survey',
 		statusLabel = null,
 		statusTone = null,
-		form
+		referenceLabel = null,
+		referenceMin = null,
+		referenceMax = null,
+		form,
+		children
 	}: Props = $props();
 
 	let showEntry = $state(false);
@@ -108,6 +120,22 @@
 	let resolvedSurveyHref = $derived(
 		surveyHref ? resolve(surveyHref.slice(1) as `crew/${string}`) : null
 	);
+
+	// The band sits on a padded scale so a reading at the edge is still visible.
+	let band = $derived.by(() => {
+		if (referenceMin === null || referenceMax === null) return null;
+		if (referenceMax <= referenceMin) return null;
+		const pad = (referenceMax - referenceMin) * 0.8;
+		const low = Math.max(0, referenceMin - pad);
+		const high = referenceMax + pad;
+		const ratio = (value: number) => Math.min(1, Math.max(0, (value - low) / (high - low)));
+		return {
+			normalStart: ratio(referenceMin) * 100,
+			normalWidth: (ratio(referenceMax) - ratio(referenceMin)) * 100,
+			marker: latest ? ratio(latest.value) * 100 : null,
+			inRange: latest ? latest.value >= referenceMin && latest.value <= referenceMax : null
+		};
+	});
 </script>
 
 <svelte:head>
@@ -174,13 +202,32 @@
 				</p>
 			</div>
 			{#if latest}
-				<p class="text-xs text-slate-400">
-					{dateFormatter.format(new Date(latest.measured_at))}
-				</p>
+				<p class="text-xs text-slate-400">{dateFormatter.format(new Date(latest.measured_at))}</p>
 			{:else}
 				<p class="text-sm text-slate-400">No readings recorded yet.</p>
 			{/if}
 		</div>
+
+		{#if band && latest && band.marker !== null && referenceLabel}
+			<div class="mt-5" aria-hidden="true">
+				<div class="relative h-2 w-full overflow-hidden rounded-full bg-white/8">
+					<div
+						class="absolute inset-y-0 bg-teal-400/40"
+						style:left="{band.normalStart}%;width:{band.normalWidth}%"
+					></div>
+				</div>
+				<div class="relative mt-1 h-4">
+					<span
+						class="absolute -top-1 size-3 -translate-x-1/2 rounded-full border-2 border-[#0b1b2e] {band.inRange
+							? 'bg-teal-300'
+							: 'bg-amber-300'}"
+						style:left="{band.marker}%"
+					></span>
+				</div>
+				<p class="text-xs text-slate-400">{referenceLabel}</p>
+			</div>
+		{/if}
+
 		{#if assessment}
 			<p class="mt-4 border-t border-white/10 pt-3 text-sm leading-relaxed text-slate-400">
 				{assessment.protocol}
@@ -206,6 +253,11 @@
 	{/if}
 
 	<MetricChart {points} {unit} {decimals} label={`${label} trend`} tone={chartTone} />
+
+	{#if children}
+		{@render children()}
+	{/if}
+
 	<MetricStatistics {points} {unit} {decimals} label={`${label} statistics`} />
 	<MetricHistory {readings} {unit} {decimals} title={`${label} history`} />
 </div>
