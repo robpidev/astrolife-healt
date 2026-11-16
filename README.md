@@ -199,6 +199,18 @@ whole app runs in demo mode without the query parameter. Driver.js and the tour
 are imported lazily, so the production bundle only loads them when the demo is
 actually active.
 
+```sh
+bun run dev:demo      # every session starts in demo mode
+bun run build:demo    # static SPA in .demo/build, no server required
+bun run snapshot:demo # refresh mock-data.json from the local database
+```
+
+`build:demo` stages a copy of the project in `.demo/`, drops every
+`+page.server.ts`, `+layout.server.ts` and `+server.ts`, replaces the server
+loads with universal loads backed by the snapshot, and writes a `200.html`
+fallback with `adapter-static`. The Vercel and Node builds are untouched. See
+`DEMO.md` for the full walkthrough.
+
 ## Screenshots
 
 | Astronaut summary                              | Measurements                              |
@@ -274,19 +286,19 @@ ground link). Each stage is a separate module with its own tests.
 
 ## Tech stack
 
-| Area      | Choice                                                                         |
-| --------- | ------------------------------------------------------------------------------ |
-| Framework | SvelteKit 3 (configuration in `vite.config.ts`, no `svelte.config.js`)         |
-| UI        | Svelte 5 with runes forced for `src/`                                          |
-| Language  | TypeScript, `strict: true`                                                     |
-| Styles    | Tailwind CSS 4 + `forms` and `typography` plugins                              |
-| Database  | SQLite via `node:sqlite` (`DatabaseSync`), schema in `bd.sql`                  |
-| 3D        | Three.js 0.187 (WebGL scene, no React wrapper)                                 |
-| Tour      | Driver.js 1.14 (guided product tour, lazily imported)                          |
-| Tests     | Vitest, node environment, colocated `*.test.ts`                                |
-| Quality   | ESLint + Prettier, `svelte-check`                                              |
-| Runtime   | Bun 1.4 (dev, build, tests and the self-hosted server)                         |
-| Adapters  | `@sveltejs/adapter-vercel` (hosted) and `@sveltejs/adapter-node` (self-hosted) |
+| Area      | Choice                                                                           |
+| --------- | -------------------------------------------------------------------------------- |
+| Framework | SvelteKit 3 (configuration in `vite.config.ts`, no `svelte.config.js`)           |
+| UI        | Svelte 5 with runes forced for `src/`                                            |
+| Language  | TypeScript, `strict: true`                                                       |
+| Styles    | Tailwind CSS 4 + `forms` and `typography` plugins                                |
+| Database  | SQLite via `node:sqlite` (`DatabaseSync`), schema in `bd.sql`                    |
+| 3D        | Three.js 0.187 (WebGL scene, no React wrapper)                                   |
+| Tour      | Driver.js 1.14 (guided product tour, lazily imported)                            |
+| Tests     | Vitest, node environment, colocated `*.test.ts`                                  |
+| Quality   | ESLint + Prettier, `svelte-check`                                                |
+| Runtime   | Bun 1.4 (dev, build, tests and the self-hosted server)                           |
+| Adapters  | `adapter-vercel` (hosted), `adapter-node` (self-hosted), `adapter-static` (demo) |
 
 ## Data model
 
@@ -344,7 +356,7 @@ demo cardiovascular data for a profile.
 
 ## Build and distribution
 
-The build has two targets, selected with `BUILD_TARGET`.
+The build has three targets, selected with `BUILD_TARGET`.
 
 ### Hosted server (Vercel)
 
@@ -377,6 +389,18 @@ The image is built with Bun, runs the standalone server with Bun, keeps the
 database in the `/app/data` volume, and listens on port 3000. Environment
 variables: `PORT`, `HOST`, `ORIGIN`, `DATABASE_PATH` and `BODY_SIZE_LIMIT`
 (raised to 4 MB because crew photos are stored as data URLs).
+
+### Static demo (no server)
+
+```sh
+bun run build:demo                          # -> .demo/build
+BASE_PATH=/astrolife-healt bun run build:demo  # GitHub Pages project site
+```
+
+`adapter-static` writes a single-page build with a `200.html` fallback, so the
+demo can be hosted on GitHub Pages, Netlify or any static bucket. It runs on the
+frozen snapshot, needs no database and no server, and is the cheapest way to
+show the app to a reviewer.
 
 ## Built with OpenCode
 
