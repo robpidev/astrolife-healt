@@ -1,5 +1,6 @@
 import type { StatementSync } from 'node:sqlite';
 import { healthAreas } from '#lib/data/healthAreas.js';
+import { radiationMetricCodes } from '#lib/data/radiation.js';
 import type {
 	HealthAreaId,
 	HealthMetric,
@@ -211,6 +212,88 @@ export function getAreaSnapshots(profileId: number, areaId: HealthAreaId): Metri
 
 		return measurementSnapshot(metric, astronautId);
 	});
+}
+
+export interface OrganReadingEntry {
+	value: number;
+	secondary: null;
+	measured_at: string;
+	source: string;
+	/** Organ code (`lens`, `skin`, `bfo`, `cns`), so the organ page can filter. */
+	detail: string;
+}
+
+/** Every organ dose for an astronaut, newest first, across all organs. */
+export function getOrganReadings(profileId: number, limit = 120): OrganReadingEntry[] {
+	const row = getStatements().astronautId.get(profileId) as unknown as
+		{ astronaut_id: string } | undefined;
+	if (!row?.astronaut_id) return [];
+
+	const capped = Number.isFinite(limit) ? Math.min(Math.max(limit, 1), 500) : 120;
+
+	const rows = getDb()
+		.prepare(
+			`SELECT m.measured_at, m.source, mc.component_code AS detail, mc.value AS value
+			 FROM measurements m
+			 JOIN measurement_components mc ON mc.measurement_id = m.id
+			 WHERE m.astronaut_id = ? AND m.metric_code = ?
+			 ORDER BY m.measured_at DESC, m.rowid DESC LIMIT ?`
+		)
+		.all(row.astronaut_id, radiationMetricCodes.organ, capped) as unknown as {
+		detail: string;
+		value: number;
+		measured_at: string;
+		source: string;
+	}[];
+
+	return rows.map((reading) => ({
+		value: reading.value,
+		secondary: null,
+		measured_at: reading.measured_at,
+		source: reading.source,
+		detail: reading.detail
+	}));
+}
+
+export interface SpeReadingEntry {
+	value: number;
+	measured_at: string;
+	source: string;
+	/** `spe-open`, `spe-segment` or `spe-closed`; `null` for legacy rows. */
+	notes: string | null;
+}
+
+/**
+ * Every solar particle event row for an astronaut, newest first. The zero-value
+ * `spe-open` rows are event boundaries, so the page can tell an event start
+ * from a dose segment without re-deriving it.
+ */
+export function getSpeReadings(profileId: number, limit = 60): SpeReadingEntry[] {
+	const row = getStatements().astronautId.get(profileId) as unknown as
+		{ astronaut_id: string } | undefined;
+	if (!row?.astronaut_id) return [];
+
+	const capped = Number.isFinite(limit) ? Math.min(Math.max(limit, 1), 500) : 60;
+
+	const rows = getDb()
+		.prepare(
+			`SELECT value, measured_at, source, notes FROM measurements
+			 WHERE astronaut_id = ? AND metric_code = ? AND value IS NOT NULL
+			 ORDER BY measured_at DESC, rowid DESC LIMIT ?`
+		)
+		.all(row.astronaut_id, radiationMetricCodes.speEvent, capped) as unknown as {
+		value: number;
+		measured_at: string;
+		source: string;
+		notes: string | null;
+	}[];
+
+	return rows.map((reading) => ({
+		value: reading.value,
+		measured_at: reading.measured_at,
+		source: reading.source,
+		notes: reading.notes
+	}));
 }
 
 interface DatedRow {

@@ -5,6 +5,7 @@ import {
 	getSurveyTone,
 	getSurveySummary
 } from '#lib/server/mental-survey.js';
+import { getRadiationSummary } from '#lib/server/radiation.js';
 import { getDb } from '#lib/server/db.js';
 
 export interface RiskFactor {
@@ -103,15 +104,16 @@ export function getRiskAssessment(profileId: number): RiskFactor[] {
 					exercise === null ? 'unknown' : exercise.value < 20 ? 'yellow' : 'green'
 				]);
 
-	const radiation = latestMetric(profileId, 'radiation_interval');
-	const radiationSeverity: HealthSeverity =
-		radiation === null
-			? 'unknown'
-			: radiation.value > 2
-				? 'red'
-				: radiation.value > 1
-					? 'yellow'
-					: 'green';
+	// One aggregation feeds both the severity and the evidence lines.
+	const radiationSummary = getRadiationSummary(profileId);
+	const radiationSeverity: HealthSeverity = radiationSummary?.overall ?? 'unknown';
+	const radiationEvidence = (radiationSummary?.assessments ?? [])
+		.filter((assessment) => assessment.status !== 'unknown')
+		.slice(0, 2)
+		.map(
+			(assessment) =>
+				`${assessment.guideline.label} ${assessment.display} / ${assessment.applied_limit} ${assessment.guideline.unit}`
+		);
 
 	const mentalTones = Object.values(getMentalMetricTones(profileId)).filter(
 		(tone): tone is 'green' | 'yellow' | 'red' => tone !== null
@@ -175,11 +177,13 @@ export function getRiskAssessment(profileId: number): RiskFactor[] {
 			id: 'radiation',
 			label: 'Radiation exposure',
 			severity: radiationSeverity,
-			evidence: radiation === null ? [] : [`Interval dose ${format(radiation.value, 'mSv')}`],
+			evidence: radiationEvidence,
 			protocol:
 				radiationSeverity === 'red'
-					? 'Review shielding and notify the flight surgeon.'
-					: 'Keep the current radiation monitoring routine.'
+					? 'Limit reached. Shelter in the most shielded zone and notify the flight surgeon.'
+					: radiationSeverity === 'yellow'
+						? 'Review shielding, log a fresh reading, and close any stale limits.'
+						: 'Keep the current radiation monitoring routine.'
 		},
 		{
 			id: 'mental',

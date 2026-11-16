@@ -102,9 +102,16 @@ export const healthAreas = [
 		label: 'Radiation',
 		metrics: [
 			{
-				id: 'dose',
-				label: 'Dose',
+				id: 'career',
+				label: 'Career effective dose',
 				unit: 'mSv',
+				metric_code: 'radiation_interval',
+				decimals: 3
+			},
+			{
+				id: 'gcr',
+				label: 'Daily GCR',
+				unit: 'mSv/day',
 				metric_code: 'radiation_interval',
 				decimals: 3
 			}

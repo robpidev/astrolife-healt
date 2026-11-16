@@ -119,6 +119,12 @@ INSERT OR IGNORE INTO metric_definitions(code,category,label,unit,value_kind,min
 ('reaction_time','mental','Tiempo de reacción','ms','numeric',0,NULL),
 ('cognitive_accuracy','mental','Aciertos en prueba cognitiva','%','numeric',0,100),
 ('radiation_interval','radiation','Dosis de radiación del intervalo','mSv','numeric',0,NULL),
+-- Organ doses ride in measurement_components with component_code in
+-- ('lens','skin','bfo','cns'), so one dosimetry snapshot can carry several organs.
+('radiation_organ','radiation','Organ radiation dose','mGy-Eq','numeric',0,5000),
+-- One row per event segment; the event itself opens with a zero row used as the
+-- boundary between events when summing.
+('radiation_spe_event','radiation','Solar particle event dose','mSv','numeric',0,1000),
 ('body_temperature','general','Temperatura corporal','°C','numeric',NULL,NULL),
 ('water_intake','general','Ingesta de agua','mL','numeric',0,NULL),
 ('body_mass','general','Masa corporal','kg','numeric',0,NULL),
@@ -224,3 +230,17 @@ CREATE TABLE IF NOT EXISTS ground_messages (
  synced_at TEXT
 );
 CREATE INDEX IF NOT EXISTS idx_ground_messages_astronaut ON ground_messages(astronaut_id, created_at DESC);
+
+-- Radiation monitoring needs two settings the clinical tables do not hold: the
+-- habitat the crew member is exposed in (it tightens the GCR daily limit) and
+-- the state of the open solar particle event. One row per astronaut, created on
+-- demand. The settings columns are nullable so existing crews keep working
+-- unconfigured; only the alert flag and the timestamp have defaults.
+CREATE TABLE IF NOT EXISTS crew_radiation_profiles (
+ astronaut_id TEXT PRIMARY KEY REFERENCES astronauts(id) ON DELETE CASCADE,
+ environment TEXT CHECK(environment IS NULL OR environment IN ('space','planetary_surface')),
+ habitat_shielding TEXT CHECK(habitat_shielding IS NULL OR length(habitat_shielding) <= 120),
+ spe_alert_active INTEGER NOT NULL DEFAULT 0 CHECK(spe_alert_active IN (0,1)),
+ spe_alert_started_at TEXT,
+ updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+);

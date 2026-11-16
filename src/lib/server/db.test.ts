@@ -13,7 +13,7 @@ describe('health schema migration', () => {
 		initializeSchema(db);
 		initializeSchema(db);
 		expect(db.prepare('SELECT mass_kg FROM personal_measurements').get()?.mass_kg).toBe(70);
-		expect(db.prepare('SELECT count(*) AS total FROM metric_definitions').get()?.total).toBe(18);
+		expect(db.prepare('SELECT count(*) AS total FROM metric_definitions').get()?.total).toBe(20);
 		expect(
 			db
 				.prepare('PRAGMA table_info(measurements)')
