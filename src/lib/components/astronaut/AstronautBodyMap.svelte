@@ -1,36 +1,33 @@
 <script lang="ts">
+	import type { Attachment } from 'svelte/attachments';
+	import type { BodyMapVitals, BrainState } from '#lib/interfaces/body-map.js';
+	import { brainState } from '#lib/utils/body-map.js';
+
+	let { vitals }: { vitals: BodyMapVitals } = $props();
+
+	let brain: BrainState = $derived(brainState(vitals));
+	let toneDot: string = $derived(
+		{
+			green: 'bg-emerald-400',
+			yellow: 'bg-amber-400',
+			red: 'bg-rose-500',
+			unknown: 'bg-violet-400'
+		}[brain.tone]
+	);
+
+	let brainLabel = $derived(
+		brain.tone === 'unknown' ? 'Brain · no mental data' : `Brain · ${brain.label.toLowerCase()}`
+	);
+	let brainSummary = $derived(brain.summary);
+
+	// --- Rotation: the accessible slider stays the source of truth ------------
 	let rotation = $state(0);
-	let dragging = $state(false);
-	let pointerStart = 0;
-	let rotationStart = 0;
 
 	let angle = $derived(((Math.round(rotation) % 360) + 360) % 360);
 	let view = $derived(angle >= 90 && angle < 270 ? 'Back' : 'Front');
 
 	function rotate(degrees: number): void {
 		rotation += degrees;
-	}
-
-	function resetFront(): void {
-		rotation += angle <= 180 ? -angle : 360 - angle;
-	}
-
-	function startDrag(event: PointerEvent): void {
-		if (event.pointerType === 'mouse' && event.button !== 0) return;
-		const target = event.currentTarget as HTMLDivElement;
-		pointerStart = event.clientX;
-		rotationStart = rotation;
-		dragging = true;
-		target.setPointerCapture(event.pointerId);
-	}
-
-	function continueDrag(event: PointerEvent): void {
-		if (!dragging) return;
-		rotation = rotationStart + (event.clientX - pointerStart) * 0.9;
-	}
-
-	function stopDrag(): void {
-		dragging = false;
 	}
 
 	function keyboardRotate(event: KeyboardEvent): void {
@@ -48,6 +45,151 @@
 			rotation = 180;
 		}
 	}
+
+	// OrbitControls reports the camera azimuth back; unwrap it to the nearest
+	// equivalent so the slider value stays continuous across the ±180° seam.
+	function handleSceneRotate(degrees: number): void {
+		const delta = ((((degrees - rotation + 180) % 360) + 360) % 360) - 180;
+		rotation += delta;
+	}
+
+	// --- Brain hotspot & tooltip ---------------------------------------------
+	// Hover and pin are separate: click only toggles the pin, so the focus that
+	// a click produces can no longer open and immediately close the tooltip.
+	let hovered = $state(false);
+	let pinned = $state(false);
+	let tooltipOpen = $derived(hovered || pinned);
+
+	function closeTooltip(): void {
+		pinned = false;
+	}
+
+	// Touch also fires pointerenter/leave, so hover only applies to a mouse;
+	// touch relies on the click toggle instead.
+	function hoverTooltip(event: PointerEvent): void {
+		if (event.pointerType === 'mouse') hovered = true;
+	}
+
+	function unhoverTooltip(event: PointerEvent): void {
+		if (event.pointerType === 'mouse') hovered = false;
+	}
+
+	// The first tap pins the tooltip and the next one closes it, so the hotspot
+	// never traps a mobile user.
+	function toggleTooltip(): void {
+		pinned = !pinned;
+	}
+
+	// Arrow keys belong to the body slider; the hotspot is a sibling of it, so
+	// the only key it needs is Escape to dismiss a pinned tooltip.
+	function closeOnEscape(event: KeyboardEvent): void {
+		if (event.key === 'Escape') {
+			event.stopPropagation();
+			pinned = false;
+		}
+	}
+
+	// --- WebGL scene, loaded lazily ------------------------------------------
+	type Scene = Awaited<typeof import('#lib/components/astronaut/anatomy/scene.js')>;
+	type SceneHandle = ReturnType<Scene['createBodyMapScene']>;
+
+	let rendererState = $state<'pending' | 'ready' | 'unavailable'>('pending');
+	// Raw state: the handle is an imperative object, and making it reactive lets
+	// the sync effects below run again as soon as the scene exists.
+	let sceneHandle = $state.raw<SceneHandle | null>(null);
+	// Reactive: the media query can change while the scene is mounted, and the
+	// effect below only re-runs when it is state.
+	let reducedMotion = $state(false);
+
+	function applyRotation(degrees: number): void {
+		sceneHandle?.setRotation(degrees);
+	}
+
+	$effect(() => {
+		applyRotation(rotation);
+	});
+
+	$effect(() => {
+		sceneHandle?.setBrain(brain);
+	});
+
+	$effect(() => {
+		sceneHandle?.setHeartRate(vitals.heart_rate);
+	});
+
+	$effect(() => {
+		sceneHandle?.setReducedMotion(reducedMotion);
+	});
+
+	const attachScene: Attachment<HTMLCanvasElement> = (node) => {
+		let disposed = false;
+		const media = window.matchMedia('(prefers-reduced-motion: reduce)');
+		reducedMotion = media.matches;
+		const onMotionChange = (): void => {
+			reducedMotion = media.matches;
+		};
+		media.addEventListener('change', onMotionChange);
+
+		let lost = false;
+		const interactiveElement =
+			node.closest<HTMLElement>('[data-body-map]')?.querySelector<HTMLElement>('[role="slider"]') ??
+			node;
+
+		function boot(): void {
+			if (disposed || lost) return;
+
+			void import('#lib/components/astronaut/anatomy/scene.js')
+				.then(({ createBodyMapScene }) => {
+					// The import can finish after the context was lost or the node was
+					// removed; creating a renderer then would throw or leak.
+					if (disposed || lost) return;
+
+					sceneHandle = createBodyMapScene(node, {
+						brain,
+						heartRate: vitals.heart_rate,
+						reducedMotion,
+						interactiveElement,
+						onRotate: handleSceneRotate
+					});
+					// The effects may have run while the import was in flight.
+					sceneHandle.setBrain(brain);
+					sceneHandle.setHeartRate(vitals.heart_rate);
+					sceneHandle.setReducedMotion(reducedMotion);
+					sceneHandle.setRotation(rotation);
+					rendererState = 'ready';
+				})
+				.catch(() => {
+					rendererState = 'unavailable';
+				});
+		}
+
+		const onLost = (event: Event): void => {
+			// The default action lets the browser try to restore the context; the
+			// figure falls back to the SVG in the meantime.
+			event.preventDefault();
+			lost = true;
+			sceneHandle?.destroy();
+			sceneHandle = null;
+			rendererState = 'unavailable';
+		};
+		const onRestored = (): void => {
+			lost = false;
+			boot();
+		};
+		node.addEventListener('webglcontextlost', onLost);
+		node.addEventListener('webglcontextrestored', onRestored);
+
+		boot();
+
+		return () => {
+			disposed = true;
+			media.removeEventListener('change', onMotionChange);
+			node.removeEventListener('webglcontextlost', onLost);
+			node.removeEventListener('webglcontextrestored', onRestored);
+			sceneHandle?.destroy();
+			sceneHandle = null;
+		};
+	};
 </script>
 
 {#snippet figure(isBack: boolean)}
@@ -135,58 +277,96 @@
 			>{view} view</span
 		>
 	</div>
-	<div
-		class="relative mx-auto h-42 w-34 cursor-grab touch-none outline-none select-none [perspective:800px] focus-visible:rounded-xl focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-cyan-300 active:cursor-grabbing sm:h-54 sm:w-36 xl:h-[340px] xl:w-40"
-		role="slider"
-		tabindex="0"
-		aria-label="Rotate body map left or right"
-		aria-valuemin="0"
-		aria-valuemax="359"
-		aria-valuenow={angle}
-		aria-valuetext={`${view} view, ${angle} degrees`}
-		onpointerdown={startDrag}
-		onpointermove={continueDrag}
-		onpointerup={stopDrag}
-		onpointercancel={stopDrag}
-		onlostpointercapture={stopDrag}
-		onkeydown={keyboardRotate}
-	>
+	<!-- Two siblings: the slider owns rotation, the hotspot owns the brain
+	status. Nesting a button inside role="slider" hides it from screen readers. -->
+	<div data-body-map class="relative mx-auto h-42 w-34 sm:h-54 sm:w-36 xl:h-[340px] xl:w-40">
+		<!-- Accessible rotation control. OrbitControls listens here, so dragging
+		the sidebar box turns the camera just like the demo. -->
 		<div
-			class:transition-transform={!dragging}
-			class="relative h-full w-full duration-200 ease-out [transform-style:preserve-3d]"
-			style:transform={`rotateY(${rotation}deg)`}
+			class="absolute inset-0 cursor-grab touch-none outline-none select-none focus-visible:rounded-xl focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-cyan-300 active:cursor-grabbing"
+			role="slider"
+			tabindex="0"
+			aria-label="Rotate body map left or right"
+			aria-valuemin="0"
+			aria-valuemax="359"
+			aria-valuenow={angle}
+			aria-valuetext={`${view} view, ${angle} degrees`}
+			onkeydown={keyboardRotate}
+		></div>
+
+		<!-- The stage deliberately overflows the sidebar and sits behind the
+		page content. It is pointer-transparent so only the slider and the
+		hotspot receive gestures. -->
+		<div
+			class="pointer-events-none absolute top-1/2 left-1/2 -z-10 h-[480px] w-[320px] -translate-x-1/2 -translate-y-[62%] sm:h-[620px] sm:w-[420px] xl:h-[800px] xl:w-[560px]"
 		>
-			<div class="absolute inset-0 [backface-visibility:hidden]">
-				{@render figure(false)}
-			</div>
-			<div class="absolute inset-0 [transform:rotateY(180deg)] [backface-visibility:hidden]">
-				{@render figure(true)}
-			</div>
+			<canvas
+				{@attach attachScene}
+				class="h-full w-full"
+				class:invisible={rendererState !== 'ready'}
+				aria-hidden="true"
+			></canvas>
+			{#if rendererState !== 'ready'}
+				<!-- The fallback crossfades instead of rotating: a JS-driven angle
+				cannot become a Tailwind class, and an inline transform would break
+				the "no inline styles" rule. It is only ever a stopgap until WebGL
+				takes over. -->
+				<div class="relative h-full w-full">
+					<div
+						class="absolute inset-0 transition-opacity duration-200 motion-reduce:transition-none {view ===
+						'Front'
+							? 'opacity-100'
+							: 'opacity-0'}"
+					>
+						{@render figure(false)}
+					</div>
+					<div
+						class="absolute inset-0 transition-opacity duration-200 motion-reduce:transition-none {view ===
+						'Back'
+							? 'opacity-100'
+							: 'opacity-0'}"
+					>
+						{@render figure(true)}
+					</div>
+				</div>
+			{/if}
 		</div>
+
+		<!-- Hotspot layer: same box as the stage, but above it so the button
+		stays clickable while the canvas is behind the page content. -->
+		<div
+			class="pointer-events-none absolute top-1/2 left-1/2 h-[480px] w-[320px] -translate-x-1/2 -translate-y-[62%] sm:h-[620px] sm:w-[420px] xl:h-[800px] xl:w-[560px]"
+		>
+			<!-- The brain lives at the same relative height on every breakpoint. -->
+			<button
+				type="button"
+				class="pointer-events-auto absolute top-[24%] left-1/2 grid size-6 -translate-x-1/2 place-items-center rounded-full focus-visible:outline-2 focus-visible:outline-cyan-300"
+				aria-describedby="brain-status"
+				aria-label="Brain status"
+				onpointerenter={hoverTooltip}
+				onpointerleave={unhoverTooltip}
+				onblur={closeTooltip}
+				onclick={toggleTooltip}
+				onkeydown={closeOnEscape}
+			>
+				<span
+					class="size-3 rounded-full border border-white/70 {toneDot} {tooltipOpen
+						? 'shadow-[0_0_10px_2px_rgb(255_255_255/0.45)]'
+						: ''}"
+				></span>
+			</button>
+			{#if tooltipOpen}
+				<span
+					role="tooltip"
+					class="pointer-events-none absolute top-[calc(24%+1.75rem)] left-1/2 z-20 w-max max-w-[190px] -translate-x-1/2 rounded-lg border border-cyan-200/25 bg-[#0b1729] px-2.5 py-1.5 text-[11px] leading-snug text-slate-200 shadow-xl shadow-black/40"
+				>
+					<span class="font-semibold text-cyan-100">{brainLabel}</span>
+					<span class="block text-slate-400">{brainSummary}</span>
+				</span>
+			{/if}
+		</div>
+		<!-- Kept in the DOM so screen readers describe the hotspot even when the
+		visual tooltip is closed. -->
+		<p id="brain-status" class="sr-only">{brainLabel}. {brainSummary}.</p>
 	</div>
-	<div class="mt-1 flex items-center justify-center gap-2">
-		<button
-			type="button"
-			onclick={() => rotate(-45)}
-			aria-label="Rotate body map left"
-			class="grid size-10 touch-manipulation place-items-center rounded-lg border border-cyan-300/20 bg-cyan-300/5 text-lg text-cyan-200 transition hover:bg-cyan-300/15 focus-visible:outline-2 focus-visible:outline-cyan-300"
-			>↶</button
-		>
-		<button
-			type="button"
-			onclick={resetFront}
-			class="min-h-10 touch-manipulation rounded-lg border border-cyan-300/20 bg-cyan-300/5 px-3 text-xs font-semibold text-cyan-200 transition hover:bg-cyan-300/15 focus-visible:outline-2 focus-visible:outline-cyan-300"
-			>Reset front</button
-		>
-		<button
-			type="button"
-			onclick={() => rotate(45)}
-			aria-label="Rotate body map right"
-			class="grid size-10 touch-manipulation place-items-center rounded-lg border border-cyan-300/20 bg-cyan-300/5 text-lg text-cyan-200 transition hover:bg-cyan-300/15 focus-visible:outline-2 focus-visible:outline-cyan-300"
-			>↷</button
-		>
-	</div>
-	<p class="mt-2 text-[11px] leading-tight text-slate-500">
-		Drag to rotate · Use ← → keys · Illustrative only
-	</p>
 </section>

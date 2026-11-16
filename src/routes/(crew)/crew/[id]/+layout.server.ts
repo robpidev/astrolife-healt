@@ -1,6 +1,7 @@
 import { error } from '@sveltejs/kit';
 import { getAstronaut } from '#lib/server/crew.js';
 import { getAlertSummary } from '#lib/server/alerts.js';
+import { getBodyMapVitals } from '#lib/server/body-map.js';
 import type { LayoutServerLoad } from './$types';
 
 export const load: LayoutServerLoad = ({ params }) => {
@@ -12,5 +13,9 @@ export const load: LayoutServerLoad = ({ params }) => {
 		error(404, 'Astronaut not found');
 	}
 
-	return { astronaut, alertSummary: getAlertSummary(astronaut.id) };
+	return {
+		astronaut,
+		alertSummary: getAlertSummary(astronaut.id),
+		vitals: getBodyMapVitals(astronaut.id)
+	};
 };
